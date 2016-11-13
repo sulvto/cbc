@@ -1,0 +1,160 @@
+options {
+    STATIC = false;
+    DEBUG_PARSER = true;
+    UNICODE_INPUT = true;
+    JDK_VERSION = "1.8";
+}
+
+// 保留字
+TOKEN : {
+        <VOID : "void">
+    | <CHAR : "char">
+    | <SHORT : "short">
+    | <INT : "int">
+    | <LONG : "long">
+    | <STRUCT : "struct">
+    | <UNION : "union">
+    | <ENUM : "ENUM">
+    | <STATIC : "static">
+    | <EXTERN : "extern">
+    | <CONST : "const">
+    | <SIGNED : "signed">
+    | <UNSIGNED : "unsigned">
+    | <IF : "if">
+    | <ELSE : "else">
+    | <SWITCH : "switch">
+    | <CASE : "case">
+    | <DEFAULT_ : "default">
+    | <WHILE : "while">
+    | <DO : "do">
+    | <FOR : "for">
+    | <RETURN : "return">
+    | <BREAK : "break">
+    | <CONTINUE : "continue">
+    | <GOTO : "goto">
+    | <TYPEDEF : "typedef">
+    | <IMPORT : "import">
+    | <SIZEOF : "sizeof">
+}
+
+// 标识符
+TOKEN : {
+    <IDENTIFIER : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","_","0"-"9"])>
+}
+
+// 数值
+TOKEN : {
+    <INTEGER : ["0"-"9"] (["0"-"9"])* ("U")? ("L")?
+            | "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+("U")?("L")?
+            | "0" (["0"-"7"])*("U")?("L")?
+    >
+}
+
+// 字符串
+MORE:{<"\""> : IN_STRING }
+<IN_STRING> MORE : {
+     <(~["\"","\\","\n","\r"])+>
+    |<"\\" (["0" - "7"]){3}>
+    |<"\\" ~[]>
+}
+<IN_STRING> TOKEN : {<SPACES: "\"">:DEFAULT}
+
+// 字符
+MORE:{<"\'"> : IN_STRING }
+<IN_STRING> MORE : {
+     <(~["\'","\\","\n","\r"])> : CHARACTER_TERM
+    |<"\\" (["0" - "7"]){3}>    : CHARACTER_TERM
+    |<"\\" ~[]>                 : CHARACTER_TERM
+}
+<CHARACTER_TERM> TOKEN :{<CHARACTER:"'" > : DEFAULT}
+
+// 跳过空白符
+SPECIAL_TOKEN : {<SPACES : ([" ","\t","\n","\r","\f"])+>}
+
+// 跳过行注释
+SPECIAL_TOKEN : {<LINE_COMMENT : "//" (~["\n","\r"])* ("\n" | "\r\n" | "\r")?>}
+
+// 跳过块注释
+MORE :{ <"/*"> : IN_BLOCK_COMMENT }
+<IN_BLOCK_COMMENT> MORE: {<~[]>}
+<IN_BLOCK_COMMENT> SPECIAL_TOKEN:{ <IN_BLOCK_COMMENT : "*/"> : DEFAULT}
+
+AST compilation_unit():{}
+{
+    import_stmts() top_defs() <EOF>
+}
+
+String import_stmts():{}
+{
+    (import_stmt())*
+}
+
+String import_stmt():{}
+{
+    <IMPORT> name()("." name())* ";"
+}
+
+String name():{}
+{
+    <IDENTIFIER>
+}
+
+String top_defs():{}
+{
+    (LOOKAHEAD(storage() typeref() <IDENTIFIER> ")")
+      defun()
+    | LOOKAHEAD(3)
+      defvars()
+    | defconst()
+    | defstruct()
+    | defunion()
+    | typedef()
+    )*
+}
+
+String defvars():{}
+{
+    storage() type() name() ["=" expr()]
+                ("," name() ["=" expr()])* ";"
+}
+
+String storage():{}
+{
+    [<STATIC>]
+}
+
+String defun():{}
+{
+    storage() typeref() name() "(" params() ")" block()
+}
+
+String parsms():{}
+{
+     LOOKAHEAD(<VOID> ")") <VOID>
+   | fixedparams() ["," "..."]
+}
+
+String fixedparams():{}
+{
+    param() (LOOKAHEAD(2) "," param())*
+}
+
+String param():{}
+{
+    type() name()
+}
+
+String block():{}
+{
+    "{" defvar_list() stmts() "}"
+}
+
+defstruct():{}
+{
+
+}
+
+
+
+
+
