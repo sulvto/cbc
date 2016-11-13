@@ -149,9 +149,60 @@ String block():{}
     "{" defvar_list() stmts() "}"
 }
 
-defstruct():{}
+String  defstruct():{}
 {
+    <STRUCT> name() member_liat() ";"
+}
 
+String defunion():{}
+{
+    <UNION> name() member_list() ";"
+}
+
+String member_list():{}
+{
+    "{" (slot() ";")* "}"
+}
+
+String slot():{}
+{
+    type() name()
+}
+
+String typedef() :{}
+{
+    <TYPEDEF> typeref() <IDENTIFIER> ";"
+}
+
+String type():{}
+{
+    typeref()
+}
+
+String typeref():{}
+{
+    typeref_base()
+        ( LOOKAHEAD(2) "[" "]"
+        | "[" <INTEGER> "]"
+        | "*"
+        | "(" param_typerefs() ")"
+        )*
+}
+
+String typeref_base():{}
+{
+     <VOID>
+   | <CHAR>
+   | <SHORT>
+   | <INT>
+   | <LONG>
+   | LOOKAHEAD(2) <UNSIGNED> <CHAR>
+   | LOOKAHEAD(2) <UNSIGNED> <SHORT>
+   | LOOKAHEAD(2) <UNSIGNED> <INT>
+   | <UNSIGNED> <LONG>
+   | <STRUCT> <IDENTIFIER>
+   | <UNION> <IDENTIFIER>
+   | LOOKAHEAD({isType(getToken(1).image)})<IDENTIFIER>
 }
 
 
