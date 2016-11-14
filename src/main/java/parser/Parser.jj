@@ -206,6 +206,187 @@ String typeref_base():{}
 }
 
 
+String stmts ():{}
+{
+    (stmt())*
+}
+
+String  stmt():{}
+{
+    (";"
+    | LOOKAHEAD(2) labeled_stmt()
+    | expr() ";"
+    | bolck()
+    | if_stmt()
+    | while_stmt()
+    | dowhile_stmt()
+    | for_stmt()
+    | switch_stmt()
+    | continue_stmt()
+    | goto_stmt()
+    | return_stmt()
+    )
+}
+
+String if_stmt():{}
+{
+    <IF> "(" expr() ")" stmt() [LOOKAHEAD(1) <ELSE> stmt()]
+}
+
+String while_stmt():{}
+{
+    <WHILE> "(" stmt() ")" stmt()
+}
+
+String for_stmt():{}
+{
+    <FOR> "(" [expr()] ";" [expr()] ";" [expr()] ")" stmt()
+}
+
+String break_stmt():{}
+{
+    <BREAK> ";"
+}
+
+String return_stmt():{}
+{
+    LOOKAHEAD(2) <RETURN> ";"
+   | <RETURN> expr() ";"
+}
+
+String expr():{}
+{
+     LOOKAHEAD(term() "=")
+     term() "=" expr()
+    | LOOKAHEAD(term() opassign_op())
+     term() opassign_op() expr()
+    | expr10()
+}
+
+String opassign_op():{}
+{
+    ( "+="
+    | "-="
+    | "*="
+    | "/="
+    | "%="
+    | "&="
+    | "^="
+    | "<<="
+    | ">>="
+    )
+}
+
+String expr10():{}
+{
+    expr9()["?" expr() ":" expr10()]
+}
+
+String expr9():{}
+{
+    expr8() ("||" expr8())*
+}
+
+String expr8():{}
+{
+    expr7() ("&&" expr7())*
+}
+
+String expr7():{}
+{
+    expr6()( ">" expr6()
+            | "<" expr6()
+            | ">=" expr6()
+            | "<=" expr6()
+            | "==" expr6()
+            | "!=" expr6()
+            )*
+}
+
+String expr6():{}
+{
+    expr5()("||" expr5())
+}
+
+String expr5():{}
+{
+    expr4()("^" expr4())
+}
+
+String expr4():{}
+{
+    expr3()("&" expr3())
+}
+
+String expr3():{}
+{
+    expr2()(  "<<" expr2()
+            | ">>" expr2()
+            )*
+}
+
+String expr2():{}
+{
+    expr1()(  "+" expr1()
+            | "-" expr1()
+            )*
+}
+
+String expr1():{}
+{
+    term() ( "*" term()
+           | "/" term()
+           | "%" term()
+           )*
+}
+
+String term():{}
+{
+     LOOKAHEAD("(" type()) ")" term()
+   | unary()
+}
+
+String unary():{}
+{
+     "++" unary()
+   | "--" unary()
+   | "+"  term()
+   | "-"  term()
+   | "!"  term()
+   | "*"  term()
+   | "&"  term()
+   | LOOKAHEAD(3) <SIZEOF> "(" type() ")"
+   | <SIZEOF> unary()
+   | postfix()
+}
+
+String postfix():{}
+{
+    primary()
+    ( "++"
+    | "--"
+    | "[" expr() "]"
+    | "." name()
+    | "->" name()
+    | "(" args() ")"
+    )*
+}
+
+String args():{}
+{
+    [expr() ("," expr())* ]
+}
+
+String primary():{}
+{
+     <INTEGER>
+   | <CHARACTER>
+   | <STRING>
+   | <IDENTIFIER>
+   | "(" expr() ")"
+}
+
+
 
 
 
