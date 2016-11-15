@@ -1,5 +1,7 @@
 package ast;
 
+import type.TypeRef;
+
 import java.io.PrintStream;
 import java.util.List;
 

@@ -377,11 +377,30 @@ String args():{}
     [expr() ("," expr())* ]
 }
 
-String primary():{}
+ExprNode primary():
 {
-     <INTEGER>
-   | <CHARACTER>
-   | <STRING>
-   | <IDENTIFIER>
+    Token t;
+    ExprNode n;
+}
+{
+     t=<INTEGER>
+     {
+        return integerNode(location(t),t.image);
+     }
+   | t=<CHARACTER>
+     {
+           return new IntegerLiteralNode(location(t),IntegerTypeRef.charRef(),characterCode(t.image));
+     }
+   | t=<STRING>
+      {
+        return new StringLiteralNode(location(t),new PointerTypeRef(IntegerTypeRef.charRef()),stringValue(t.image));
+      }
+   | t=<IDENTIFIER>
+     {
+        return new VariableNode(location(t),t.image);
+     }
    | "(" expr() ")"
+    {
+        return n;
+    }
 }
