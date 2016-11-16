@@ -1,7 +1,10 @@
 package ast;
 
+import compiler.DeclarationVisitor;
+
 /**
  * Created by sulvto on 16-11-15.
  */
-public class CompositeTypeDefinition extends TypeDefinition {
+public abstract class CompositeTypeDefinition extends TypeDefinition {
+
 }

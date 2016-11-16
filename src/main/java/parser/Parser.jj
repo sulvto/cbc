@@ -5,6 +5,60 @@ options {
     JDK_VERSION = "1.8";
 }
 
+PARSER_BEGIN(Parser)
+
+class Parser {
+    private String sourceName;
+    private LibraryLoader loader;
+    private ErrorHandler errorHandler;
+    private Set<String> knownTypedefs;
+
+    public Parser(Reader s,String name,LibraryLoader loader,ErrorHandler errorHandler,boolean debug){
+        this(s);
+        this.sourceName = name;
+        this.loader = loader;
+        this.errorHandler = errorHandler;
+        this.knownTypedefs = new HashSet<String>();
+        if(debug){
+            enable_tracing();
+        } else {
+            disable_tracing();
+        }
+    }
+
+    public AST parse() throws SyntaxException {
+        try {
+            return compilation_unit();
+        } catch(TokenMgrError err){
+            throw new SyntaxException(err.getMessage());
+        } catch(parseException ex){
+            throw new SyntaxException(err.getMessage());
+        } catch(LookaheadSuccess err){
+            throw new SyntaxException("syntax error");
+        }
+    }
+
+    public static AST parseFile(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws SytaxException ,FileException {
+        return newFileParse(file,loader,errorHandler,debug).parse();
+    }
+
+    public final static String SOURCE_ENCODING = "UTF-8";
+
+    public static Parser newFileParse(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws FileException {
+        try{
+            BufferedReader r = new BufferedReader(new InputStreanReader(new FileInputStream(file),SOURCE_ENCODING));
+             return new Parse(r,file.getPath(),loader,errorHandler,debug);
+        } catch(FileNotFoundException ex){
+            throw new FileException(ex.getMessage());
+        }catch (UnsupportedEncodingException ex){
+            throw new Error("UTF-8 is not supported??: "+ex.getMessage());
+        }
+    }
+}
+
+PARSER_END(Parser)
+
+
 // 保留字
 TOKEN : {
         <VOID : "void">

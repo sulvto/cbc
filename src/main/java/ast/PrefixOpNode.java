@@ -6,10 +6,16 @@ package ast;
  */
 public class PrefixOpNode extends UnaryArithmeticOpNode {
     String op;
-    ExprNode exprNode;
+    ExprNode expr;
 
     public PrefixOpNode(String op, ExprNode exprNode) {
+        super(op,exprNode);
         this.op = op;
-        this.exprNode = exprNode;
+        this.expr = exprNode;
+    }
+
+    @Override
+    public ExprNode getExpr() {
+        return expr;
     }
 }

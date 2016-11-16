@@ -5,7 +5,7 @@ import java.io.PrintStream;
 /**
  * Created by sulvto on 16-11-14.
  */
- public abstract class Node implements Dumpable{
+public abstract class Node implements Dumpable {
 
     abstract public Location location();
 
@@ -24,4 +24,5 @@ import java.io.PrintStream;
     }
 
     protected abstract void _dump(Dumper d);
+
 }

@@ -5,11 +5,15 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class MemberNode extends LHSNode {
-    ExprNode exprNode;
+    ExprNode expr ;
     String memb;
 
     public MemberNode(ExprNode exprNode, String memb) {
-        this.exprNode = exprNode;
+        this.expr = exprNode;
         this.memb = memb;
+    }
+
+    public ExprNode getExpr() {
+        return expr;
     }
 }

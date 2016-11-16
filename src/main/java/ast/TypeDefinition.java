@@ -1,10 +1,12 @@
 package ast;
 
+import compiler.DeclarationVisitor;
+
 /**
  * 类型定义
  * Created by sulvto on 16-11-14.
  */
-public class TypeDefinition extends Node {
+public abstract class TypeDefinition extends Node {
     @Override
     public Location location() {
         return null;
@@ -14,4 +16,6 @@ public class TypeDefinition extends Node {
     protected void _dump(Dumper d) {
 
     }
+    abstract public <T> T accept(DeclarationVisitor<T> visitor);
+
 }

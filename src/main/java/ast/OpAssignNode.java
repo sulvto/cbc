@@ -13,4 +13,18 @@ public class OpAssignNode extends AbstractAssignNode {
         this.op = op;
         this.rhs = rhs;
     }
+
+    public ExprNode getRhs() {
+        return rhs;
+    }
+
+    public ExprNode getLhs() {
+        return lhs;
+    }
+
+    @Override
+    public <S, E> E accept(ASTVisitor<S, E> visitor) {
+        return visitor.visit(this);
+    }
+
 }

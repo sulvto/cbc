@@ -6,12 +6,17 @@ package ast;
  */
 public class UnaryOpNode extends ExprNode {
     String op;
-    ExprNode exprNode;
+    ExprNode expr;
 
     public UnaryOpNode(String op, ExprNode exprNode) {
         this.op = op;
-        this.exprNode = exprNode;
+        this.expr = exprNode;
     }
+
+    public ExprNode getExpr() {
+        return expr;
+    }
+
     @Override
     public Type getType() {
         return null;
@@ -19,11 +24,14 @@ public class UnaryOpNode extends ExprNode {
 
     @Override
     public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return null;
+        return visitor.visit(this);
     }
+
 
     @Override
     protected void _dump(Dumper d) {
 
     }
+
+
 }

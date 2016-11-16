@@ -22,4 +22,7 @@ public class TypeNode extends Node {
     protected void _dump(Dumper d) {
 
     }
+    public TypeNode accept(ASTVisitor visitor) {
+        throw new Error("do not call TypeNode#accept");
+    }
 }

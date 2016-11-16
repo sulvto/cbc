@@ -13,6 +13,10 @@ public class CastNode extends ExprNode {
         this.exprNode = n;
     }
 
+    public ExprNode getExpr() {
+        return exprNode;
+    }
+
     @Override
     public Type getType() {
         return null;

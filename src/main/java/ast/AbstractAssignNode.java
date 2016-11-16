@@ -4,14 +4,9 @@ package ast;
  * 赋值
  * Created by sulvto on 16-11-15.
  */
-public class AbstractAssignNode extends ExprNode {
+public abstract class AbstractAssignNode extends ExprNode {
     @Override
     public Type getType() {
-        return null;
-    }
-
-    @Override
-    public <S, E> E accept(ASTVisitor<S, E> visitor) {
         return null;
     }
 
@@ -19,4 +14,5 @@ public class AbstractAssignNode extends ExprNode {
     protected void _dump(Dumper d) {
 
     }
+
 }

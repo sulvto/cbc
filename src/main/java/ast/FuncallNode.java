@@ -7,12 +7,20 @@ import java.util.List;
  * Created by sulvto on 16-11-15.
  */
 public class FuncallNode extends ExprNode {
-    ExprNode exprNode;
+    ExprNode expr;
     List<ExprNode> args;
 
     public FuncallNode(ExprNode exprNode, List<ExprNode> args) {
-        this.exprNode = exprNode;
+        this.expr = exprNode;
         this.args = args;
+    }
+
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    public List<ExprNode> getArgs() {
+        return args;
     }
 
     @Override

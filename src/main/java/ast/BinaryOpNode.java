@@ -33,6 +33,11 @@ public class BinaryOpNode extends ExprNode {
         return (type != null) ? type : left.getType();
     }
 
+    @Override
+    public <S, E> E accept(ASTVisitor<S, E> visitor) {
+        return visitor.visit(this);
+    }
+
 
     public void setType(Type type) {
         if (this.type != null) {
@@ -68,9 +73,5 @@ public class BinaryOpNode extends ExprNode {
         d.printMember("right", right);
     }
 
-    @Override
-    public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return visitor.visit(this);
-    }
 
 }

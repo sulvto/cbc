@@ -5,10 +5,18 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class ArefNode extends LHSNode {
-    ExprNode expr, idx;
+    ExprNode expr, index;
 
     public ArefNode(ExprNode expr, ExprNode idx) {
         this.expr = expr;
-        this.idx = idx;
+        this.index = idx;
+    }
+
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    public ExprNode getIndex() {
+        return index;
     }
 }
