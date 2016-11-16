@@ -5,6 +5,14 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class CastNode extends ExprNode {
+    TypeNode typeNode;
+    ExprNode exprNode;
+
+    public CastNode(TypeNode t,ExprNode n) {
+        this.typeNode = t;
+        this.exprNode = n;
+    }
+
     @Override
     public Type getType() {
         return null;

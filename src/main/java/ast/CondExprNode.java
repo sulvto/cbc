@@ -5,6 +5,14 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class CondExprNode extends ExprNode {
+    ExprNode c, t, e;
+
+    public CondExprNode(ExprNode c, ExprNode t, ExprNode exprNode) {
+        this.c = c;
+        this.t = t;
+        this.e = e;
+    }
+
     @Override
     public Type getType() {
         return null;

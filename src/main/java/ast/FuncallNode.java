@@ -1,10 +1,20 @@
 package ast;
 
+import java.util.List;
+
 /**
  * 函数调用
  * Created by sulvto on 16-11-15.
  */
-public class FuncallNode extends ExprNode{
+public class FuncallNode extends ExprNode {
+    ExprNode exprNode;
+    List<ExprNode> args;
+
+    public FuncallNode(ExprNode exprNode, List<ExprNode> args) {
+        this.exprNode = exprNode;
+        this.args = args;
+    }
+
     @Override
     public Type getType() {
         return null;

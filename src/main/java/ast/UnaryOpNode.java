@@ -5,6 +5,13 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class UnaryOpNode extends ExprNode {
+    String op;
+    ExprNode exprNode;
+
+    public UnaryOpNode(String op, ExprNode exprNode) {
+        this.op = op;
+        this.exprNode = exprNode;
+    }
     @Override
     public Type getType() {
         return null;

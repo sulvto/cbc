@@ -79,14 +79,44 @@ MORE :{ <"/*"> : IN_BLOCK_COMMENT }
 <IN_BLOCK_COMMENT> MORE: {<~[]>}
 <IN_BLOCK_COMMENT> SPECIAL_TOKEN:{ <IN_BLOCK_COMMENT : "*/"> : DEFAULT}
 
-AST compilation_unit():{}
+AST compilation_unit():
 {
-    import_stmts() top_defs() <EOF>
+    Token t;
+    Declarations impdecls,decls;
+}
+{
+    {
+        t = getToken(1);
+    }
+    impdecls=import_stmts() decls=top_defs() <EOF>
+    {
+        decls.add(impdecls);
+        return new AST(location(t),decls);
+    }
 }
 
-String import_stmts():{}
+Declarations import_stmts():
 {
-    (import_stmt())*
+    String libid;
+    Declarations impdecls = new Declarations();
+}
+{
+    (libid=import_stmt()
+        {
+            try{
+                Declarations decls = loader.loadLibrary(libid,errorHandler);
+                if(decls!=null){
+                    impdecls.add(decls);
+                    addKnownTypedefs(decls.typedefs());
+                }
+            }catch(ComplieException ex){
+                throw new ParseException(ex.getMessage());
+            }
+        }
+    )*
+    {
+        return impdecls;
+    }
 }
 
 String import_stmt():{}
@@ -99,23 +129,54 @@ String name():{}
     <IDENTIFIER>
 }
 
-String top_defs():{}
+Declarations top_defs():
+{
+    Declarations decls = new Declarations();
+    DefinedFunction defun;
+    List<DefinedVariable> defvars;
+    Constant defconst;
+    StructNode defstruct;
+    UnionNode defunion;
+    TypedeNode typedef;
+}
 {
     (LOOKAHEAD(storage() typeref() <IDENTIFIER> ")")
-      defun()
+      defun=defun()        { decls.addDefun(defun); }
     | LOOKAHEAD(3)
-      defvars()
-    | defconst()
-    | defstruct()
-    | defunion()
-    | typedef()
+      defvars=defvars()    { decls.addDefvars(defvars); }
+    | defconst=defconst()  { decls.addDefconst(defconst); }
+    | defstruct=defstruct(){ decls.addDefstruct(defstruct); }
+    | defunion=defunion()  { decls.addDefunion(defunion); }
+    | typedef=typedef()    { decls.addTypedef(typedef); }
     )*
+    {
+        return decls;
+    }
 }
 
-String defvars():{}
+List<DefinedVariable> defvars():
 {
-    storage() type() name() ["=" expr()]
-                ("," name() ["=" expr()])* ";"
+    List<DefinedVariable> defs = new ArrayList<DefinedVariable>();
+    boolean priv;
+      TypeNode type;
+      String name;
+      ExprNode init = null;
+}
+{
+    priv=storage() type=type() name=name() ["=" init=expr()]
+    {
+        defs.add(new DefinedVariable(priv,type,name,init));
+        init = null;
+    }
+    ("," name=name() ["=" init=expr()]
+        {
+            defs.add(new DefinedVariable(priv,type,name,init));
+            init = null;
+        }
+    )* ";"
+    {
+        return defs;
+    }
 }
 
 String storage():{}
@@ -123,9 +184,20 @@ String storage():{}
     [<STATIC>]
 }
 
-String defun():{}
+DefinedFunction defun():
 {
-    storage() typeref() name() "(" params() ")" block()
+    boolean priv;
+    TypeRef ret;
+    String n;
+    Params ps;
+    BlockNode body;
+}
+{
+    priv=storage() ret=typeref() n=name() "(" ps=params() ")" body=block()
+    {
+        TypeRef t = new FunctionTypeRef(ret,ps.parametersTypeRef());
+        return new DefinedFunction(priv,new TypeNode(t),n,ps,body);
+    }
 }
 
 String parsms():{}
@@ -144,9 +216,29 @@ String param():{}
     type() name()
 }
 
-String block():{}
+BlockNode block():
 {
-    "{" defvar_list() stmts() "}"
+    Token t;
+    List<DefinedVariable> vars;
+    List<StmtNoode> stmts;
+}
+{
+    t="{" vars=defvar_list() stmts=stmts() "}"
+    {
+        return new BlockNode(location(t),vars,stmts);
+    }
+}
+
+List<DefinedVariable> defvar_list():
+{
+    List<DefinedVariable> result = new ArrayList<DefinedVariable>();
+    List<DefinedVariable> vats;
+}
+{
+    (vars=defvars(){ result.addAll(vars); })*
+    {
+        return result;
+    }
 }
 
 String  defstruct():{}
@@ -206,9 +298,16 @@ String typeref_base():{}
 }
 
 
-String stmts ():{}
+List<StmtNode> stmts ():
 {
-    (stmt())*
+    List<StmtNode> ss = new ArrayList<StmtNode>();
+    StmtNode s;
+}
+{
+    (s=stmt(){ if(s!=null) ss.add(s);})*
+    {
+        return ss;
+    }
 }
 
 String  stmt():{}
@@ -228,14 +327,31 @@ String  stmt():{}
     )
 }
 
-String if_stmt():{}
+IfNode if_stmt():
 {
-    <IF> "(" expr() ")" stmt() [LOOKAHEAD(1) <ELSE> stmt()]
+    Token t;
+    ExprNode cond;
+    StmtNode thenBody,elseBody = null;
+}
+{
+    t=<IF> "(" cond=expr() ")" thenBody=stmt()
+            [LOOKAHEAD(1) <ELSE> elseBody=stmt()]
+            {
+                return new IfNode(location(t),cond,thenBody,elseBody);
+            }
 }
 
-String while_stmt():{}
+WhileNode while_stmt():
 {
-    <WHILE> "(" stmt() ")" stmt()
+    Token t;
+    ExprNode cond;
+    StmeNode body;
+}
+{
+    t=<WHILE> "(" cond=stmt() ")" body=stmt()
+    {
+        return new WhileNode(location(t),cond,body);
+    }
 }
 
 String for_stmt():{}
@@ -254,45 +370,79 @@ String return_stmt():{}
    | <RETURN> expr() ";"
 }
 
-String expr():{}
+ExprNode expr():
+{
+    ExpeNode lhs,rhs,expr;
+    String op;
+}
 {
      LOOKAHEAD(term() "=")
-     term() "=" expr()
+     lhs=term() "=" rhs=expr()
+     {
+        return new AssignNode(lhs,rhs);
+     }
     | LOOKAHEAD(term() opassign_op())
-     term() opassign_op() expr()
-    | expr10()
+     lhs=term() op=opassign_op() rhs=expr()
+     {
+        return new OpAssignNode(lhs,op,rhs);
+     }
+    | expr=expr10()
+     {
+        return expr;
+     }
 }
 
 String opassign_op():{}
 {
-    ( "+="
-    | "-="
-    | "*="
-    | "/="
-    | "%="
-    | "&="
-    | "^="
-    | "<<="
-    | ">>="
+    ( "+="  {return "+";}
+    | "-="  {return "-";}
+    | "*="  {return "*";}
+    | "/="  {return "/";}
+    | "%="  {return "%";}
+    | "&="  {return "&";}
+    | "^="  {return "^";}
+    | "<<=" {return "<<";}
+    | ">>=" {return ">>";}
     )
 }
 
-String expr10():{}
+ExprNode expr10():
 {
-    expr9()["?" expr() ":" expr10()]
+    ExprNode c,t,e;
+}
+{
+    c=expr9()["?" t=expr() ":" e=expr10(){ return new CondExprNode(c,t,e); }]
+    {
+        return c;
+    }
 }
 
-String expr9():{}
+ExprNode expr9():
 {
-    expr8() ("||" expr8())*
+    ExprNode l,r;
+}
+{
+    l=expr8() ("||" r=expr8(){ l = new LogicalOrNode(l,r); })*
+    {
+        return l;
+    }
 }
 
-String expr8():{}
+ExprNode expr8():
 {
-    expr7() ("&&" expr7())*
+    ExprNode l,r;
+}
+{
+    l=expr7() ("&&" r=expr7(){ l = new LogicalAndNode(l,r); })*
+    {
+        return l;
+    }
 }
 
-String expr7():{}
+ExprNode expr7():
+{
+    ExprNode l,r;
+}
 {
     expr6()( ">" expr6()
             | "<" expr6()
@@ -303,73 +453,108 @@ String expr7():{}
             )*
 }
 
-String expr6():{}
+ExprNode expr6():{}
 {
     expr5()("||" expr5())
 }
 
-String expr5():{}
+ExprNode expr5():{}
 {
     expr4()("^" expr4())
 }
 
-String expr4():{}
+ExprNode expr4():{}
 {
     expr3()("&" expr3())
 }
 
-String expr3():{}
+ExprNode expr3():{}
 {
     expr2()(  "<<" expr2()
             | ">>" expr2()
             )*
 }
 
-String expr2():{}
+ExprNode expr2():
 {
-    expr1()(  "+" expr1()
-            | "-" expr1()
-            )*
+    ExprNode l,r;
+}
+{
+    l=expr1() ( "+" r=expr1() { l= new BinaryOpNode(l,"+",r); }
+              | "-" r=expr1() { l= new BinaryOpNode(l,"-",r); }
+              )*
+              {
+                return l;
+              }
 }
 
-String expr1():{}
+ExprNode expr1():
 {
-    term() ( "*" term()
-           | "/" term()
-           | "%" term()
-           )*
+    ExprNode l,r;
+}
+{
+    l=term() ( "*" r=term() { l = new BinaryOpNode(l,"*",r); }
+             | "/" r=term() { l = new BinaryOpNode(l,"/",r); }
+             | "%" r=term() { l = new BinaryOpNode(l,"%",r); }
+             )*
+             {
+                return l;
+             }
 }
 
-String term():{}
+ExprNode term():
 {
-     LOOKAHEAD("(" type()) ")" term()
-   | unary()
+    TyoeNode t;
+    ExprNode n;
+}
+{
+     LOOKAHEAD("(" type())
+      "(" t = type() ")" n = term(){ return new CastNode(t,n);}
+   | unary()                       { return n;}
 }
 
-String unary():{}
+ExprNode unary():
 {
-     "++" unary()
-   | "--" unary()
-   | "+"  term()
-   | "-"  term()
-   | "!"  term()
-   | "*"  term()
-   | "&"  term()
-   | LOOKAHEAD(3) <SIZEOF> "(" type() ")"
-   | <SIZEOF> unary()
-   | postfix()
+    ExprNode n;
+    TypeNode t;
+}
+{
+     "++" n=unary() { return new PrefixOpNode("++",n);}
+   | "--" n=unary() { return new PrefixOpNode("--",n);}
+   | "+"  n=term()  { return new UnaryOpNode("+",n);}
+   | "-"  n=term()  { return new UnaryOpNode("-",n);}
+   | "!"  n=term()  { return new UnaryOpNode("!",n);}
+   | "~"  n=term()  { return new UnaryOpNode("~",n);}
+   | "*"  n=term()  { return new DereferenceNode(n);}
+   | "&"  n=term()  { return new AddressNode(n);}
+   | LOOKAHEAD(3) <SIZEOF> "(" y=type() ")"
+     {
+           return new SizeofTypeNode(t,sizr_t());
+     }
+   | <SIZEOF> n=unary()
+     {
+         return new SizeofExprNode(n,sizr_t());
+     }
+   | n=postfix() { return n; }
 }
 
-String postfix():{}
+ExprNode postfix():
 {
-    primary()
-    ( "++"
-    | "--"
-    | "[" expr() "]"
-    | "." name()
-    | "->" name()
-    | "(" args() ")"
-    )*
+    ExprNode expr,idx;
+    String memb;
+    List<ExprNode> args;
+}
+{
+    expr = primary()
+    ( "++"               { expr = new SuffixOpNode("++",expr); }
+    | "--"               { expr = new SuffixOpNode("--",expr); }
+    | "[" ind=expr() "]" { expr = new ArefNode(expr,idx); }
+    | "." memb=name()    { expr = new MemberNode(expr,memb); }
+    | "->" memb=name()   { expr = new PtrMemberNode(expr,memb); }
+    | "(" args=args() ")"{ expr = new FuncallNode(expr,args); }
+    )*{
+        return expr;
+    }
 }
 
 String args():{}
