@@ -1,7 +1,5 @@
 package ast;
 
-import compiler.DeclarationVisitor;
-
 /**
  * Created by sulvto on 16-11-15.
  */

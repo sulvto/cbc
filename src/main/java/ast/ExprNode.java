@@ -1,6 +1,7 @@
 package ast;
 
 import exception.SemanticError;
+import type.Type;
 
 /**
  * Created by sulvto on 16-11-14.

@@ -1,12 +1,13 @@
 package ast;
 
+import entity.DefinedVariable;
+import entity.Entity;
+import ir.IR;
 import jdk.nashorn.internal.ir.ReturnNode;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static jdk.nashorn.internal.parser.TokenKind.IR;
 
 /**
  * Created by sulvto on 16-11-14.

@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * （a?b:c）
  * Created by sulvto on 16-11-15.

@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * 能够成为赋值的左值的节点
  * Created by sulvto on 16-11-15.

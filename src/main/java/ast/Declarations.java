@@ -1,5 +1,7 @@
 package ast;
 
+import entity.DefinedVariable;
+
 import java.util.Collection;
 import java.util.List;
 

@@ -1,10 +1,16 @@
 package ast;
 
+import type.Type;
+
 /**
  * Created by sulvto on 16-11-15.
  */
 public class TypeNode extends Node {
     boolean resolved;
+
+    public TypeNode(Type type) {
+        super();
+    }
 
     public String typeRef() {
     }
