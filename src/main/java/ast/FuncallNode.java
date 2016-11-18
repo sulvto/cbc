@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 import java.util.List;
 
 /**

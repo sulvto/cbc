@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * 一元运算表达式（-x,+x...）
  * Created by sulvto on 16-11-15.

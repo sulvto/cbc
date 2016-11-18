@@ -8,6 +8,13 @@ public class IfNode extends StmtNode {
     StmtNode thenBody;
     StmtNode elseBody;
 
+    public IfNode(Location location, ExprNode cond, StmtNode thenBody, StmtNode elseBody) {
+        super(location);
+        this.cond = cond;
+        this.thenBody = thenBody;
+        this.elseBody = elseBody;
+    }
+
     public StmtNode getElseBody() {
         return elseBody;
     }

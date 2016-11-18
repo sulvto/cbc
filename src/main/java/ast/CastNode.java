@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * 类型转换
  * Created by sulvto on 16-11-15.

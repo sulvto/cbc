@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * 二元运算表达式 （x+y,x-y）
  * Created by sulvto on 16-11-15.

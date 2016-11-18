@@ -6,20 +6,15 @@ import type.Type;
 /**
  * Created by sulvto on 16-11-14.
  */
-public abstract class ExprNode extends Node{
+public abstract class ExprNode extends Node {
 
-    @Override
-    public Location location() {
-        return null;
-    }
-
-    abstract public  Type getType();
+    abstract public Type getType();
 
     Type origType() {
         return getType();
     }
 
-    public long allocSize(){
+    public long allocSize() {
         return getType().allocSize();
     }
 
@@ -51,6 +46,6 @@ public abstract class ExprNode extends Node{
         }
     }
 
-    abstract public <S,E> E accept(ASTVisitor<S,E> visitor);
+    public abstract <S, E> E accept(ASTVisitor<S, E> visitor);
 
 }

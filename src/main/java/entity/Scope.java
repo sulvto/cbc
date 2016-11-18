@@ -25,5 +25,9 @@ public abstract class Scope {
     abstract public ToplevelScope toplevel();
 
     abstract public Scope getParent();
+
     abstract public Entity getEntity(String name) throws SemanticException;
+
+
+
 }

@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class LocalScope extends Scope {
     Scope parent;
-    Map<String , DefinedVariable> variables;
+    Map<String, DefinedVariable> variables;
 
     public LocalScope(Scope parent) {
         super();
@@ -41,5 +41,22 @@ public class LocalScope extends Scope {
             return definedVariable;
         }
         return parent.getEntity(name);
+    }
+
+    public boolean isDefinedLocally(String name) {
+        return variables.containsKey(name);
+    }
+
+    public void defineEntity(DefinedVariable variable) {
+
+    }
+
+    public void defineVariable(DefinedVariable variable) {
+        String variableName = variable.getName();
+        if (variables.containsKey(variableName)) {
+            throw new SemanticException("duplicated variable :" + variableName);
+        } else {
+            variables.put(variableName, variable);
+        }
     }
 }

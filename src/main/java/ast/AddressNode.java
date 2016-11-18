@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * 地址表达式 （&x）
  * Created by sulvto on 16-11-15.

@@ -6,10 +6,15 @@ import type.Type;
  * Created by sulvto on 16-11-15.
  */
 public class TypeNode extends Node {
-    boolean resolved;
+    private boolean resolved;
+    private Type type;
 
     public TypeNode(Type type) {
-        super();
+        this.type = type;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public String typeRef() {

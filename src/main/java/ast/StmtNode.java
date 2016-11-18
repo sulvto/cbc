@@ -5,9 +5,14 @@ package ast;
  * Created by sulvto on 16-11-14.
  */
 public abstract class StmtNode extends Node{
+    private Location location;
+
+    public StmtNode(Location location) {
+        this.location = location;
+    }
     @Override
     public Location location() {
-        return null;
+        return location;
     }
 
     @Override

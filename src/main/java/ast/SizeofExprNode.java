@@ -1,5 +1,7 @@
 package ast;
 
+import type.Type;
+
 /**
  * 计算表达式的sizeof的表达式
  * Created by sulvto on 16-11-15.
