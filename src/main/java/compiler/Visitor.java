@@ -1,6 +1,7 @@
 package compiler;
 
 import ast.*;
+import entity.DefinedVariable;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
     public Void visit(BlockNode node) {
         for (DefinedVariable variable : node.getVariables()) {
             if (variable.hasInitializer()) {
-                visitExpr(variable.initializer());
+                visitExpr(variable.getInitializer());
             }
         }
         visitStmts(node.getStmtNodes());

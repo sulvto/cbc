@@ -12,16 +12,16 @@ public class BlockNode extends StmtNode {
 
     private LocalScope scope;
     private List<DefinedVariable> variables;
-    private List<StmtNode> stmtNodes;
+    private List<StmtNode> stmts;
 
     public BlockNode(Location location, List<DefinedVariable> vars, List<StmtNode> stmts) {
         super(location);
         this.variables = vars;
-        this.stmtNodes = stmts;
+        this.stmts= stmts;
     }
 
-    public List<StmtNode> getStmtNodes() {
-        return stmtNodes;
+    public List<StmtNode> getStmts() {
+        return stmts;
     }
 
     public List<DefinedVariable> getVariables() {

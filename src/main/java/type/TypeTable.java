@@ -1,7 +1,6 @@
 package type;
 
 import ast.Slot;
-import jdk.internal.org.xml.sax.ErrorHandler;
 
 import java.util.HashMap;
 import java.util.Map;
