@@ -32,6 +32,12 @@ public class DefinedVariable extends Variable {
         return true;
     }
 
+    @Override
+    public boolean isInitialized() {
+        // TODO
+        return false;
+    }
+
     public void setSequence(long sequence) {
         this.sequence = sequence;
     }
@@ -74,6 +80,6 @@ public class DefinedVariable extends Variable {
 
     @Override
     public <T> T accept(EntityVisitor<T> visitor) {
-//        return visitor.;
+        return visitor.visit(this);
     }
 }

@@ -1,10 +1,9 @@
-package entity;
+package compiler;
 
 import ast.AST;
 import ast.BlockNode;
-import ast.DefinedFunction;
 import ast.VariableNode;
-import compiler.Visitor;
+import entity.*;
 import exception.SemanticException;
 
 import java.util.LinkedList;

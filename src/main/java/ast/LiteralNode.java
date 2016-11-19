@@ -18,6 +18,11 @@ public class LiteralNode extends ExprNode {
     }
 
     @Override
+    public Location location() {
+        return null;
+    }
+
+    @Override
     protected void _dump(Dumper d) {
 
     }

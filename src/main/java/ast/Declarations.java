@@ -1,5 +1,6 @@
 package ast;
 
+import entity.DefinedFunction;
 import entity.DefinedVariable;
 
 import java.util.Collection;

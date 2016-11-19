@@ -11,9 +11,9 @@ import type.Type;
  */
 public abstract class Entity implements Dumpable {
 
-    private boolean isPrivate;
-    private String name;
-    private TypeNode typeNode;
+    boolean isPrivate;
+    protected String name;
+    protected TypeNode typeNode;
     private long nRefered;
     private MemoryReference memory;
     private Operand address;
