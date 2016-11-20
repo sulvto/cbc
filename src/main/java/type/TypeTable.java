@@ -63,7 +63,7 @@ public class TypeTable {
         return type.isArray() ? pointerTo(type.getBaseType()) : type;
     }
 
-    private PointerType pointerTo(Type baseType) {
+    public PointerType pointerTo(Type baseType) {
         return new PointerType(pointerSize, baseType);
     }
 
@@ -114,4 +114,19 @@ public class TypeTable {
         }
     }
 
+    public IntegerType signedInt() {
+        return (IntegerType) table.get(IntegerTypeRef.intRef());
+    }
+
+    public IntegerType unsignedInt() {
+        return (IntegerType) table.get(IntegerTypeRef.uintRef());
+    }
+
+    public IntegerType signedLong() {
+        return (IntegerType) table.get(IntegerTypeRef.longRef());
+    }
+
+    public IntegerType unsignedLong() {
+        return (IntegerType) table.get(IntegerTypeRef.ulongRef());
+    }
 }

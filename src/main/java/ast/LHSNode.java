@@ -10,6 +10,11 @@ public abstract class LHSNode extends ExprNode {
     Type type;
 
     @Override
+    public boolean isLvalue() {
+        return true;
+    }
+
+    @Override
     public Type getType() {
         return type!=null?type:origType();
     }

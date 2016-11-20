@@ -31,7 +31,7 @@ public class UnaryOpNode extends ExprNode {
 
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
 
     }
 

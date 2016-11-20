@@ -35,18 +35,13 @@ public class BinaryOpNode extends ExprNode {
         return (type != null) ? type : left.getType();
     }
 
-    @Override
-    public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return visitor.visit(this);
-    }
-
-
     public void setType(Type type) {
         if (this.type != null) {
             throw new Error("BinaryOp#setType called twice");
         }
         this.type = type;
     }
+
 
     public ExprNode getLeft() {
         return left;
@@ -69,11 +64,19 @@ public class BinaryOpNode extends ExprNode {
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    public Location location() {
+        return left.location();
+    }
+
+    @Override
+    protected void doDump(Dumper d) {
         d.printMember("operator", operator);
         d.printMember("left", left);
         d.printMember("right", right);
     }
 
-
+    @Override
+    public <S, E> E accept(ASTVisitor<S, E> visitor) {
+        return visitor.visit(this);
+    }
 }

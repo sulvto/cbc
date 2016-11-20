@@ -38,7 +38,7 @@ public abstract class Entity implements Dumpable {
     }
 
 
-    Location location() {
+    public Location location() {
         return typeNode.location();
     }
 
@@ -92,10 +92,10 @@ public abstract class Entity implements Dumpable {
 
     public void dump(Dumper dumper) {
         dumper.printClass(this, location());
-        _dump(dumper);
+        doDump(dumper);
     }
 
-    abstract protected void _dump(Dumper dumper);
+    abstract protected void doDump(Dumper dumper);
 
     abstract public <T> T accept(EntityVisitor<T> visitor);
 

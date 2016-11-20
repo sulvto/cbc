@@ -28,6 +28,10 @@ public class BlockNode extends StmtNode {
         return variables;
     }
 
+    public LocalScope getScope() {
+        return scope;
+    }
+
     public void setScope(LocalScope scope) {
         this.scope = scope;
     }
@@ -38,4 +42,9 @@ public class BlockNode extends StmtNode {
     }
 
 
+    @Override
+    protected void doDump(Dumper d) {
+        d.printNodeList("variables", variables);
+        d.printNodeList("stmts", stmts);
+    }
 }

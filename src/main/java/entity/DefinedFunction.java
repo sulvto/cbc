@@ -4,6 +4,7 @@ import ast.BlockNode;
 import ast.Dumper;
 import ast.TypeNode;
 import compiler.Parameter;
+import ir.Stmt;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class DefinedFunction extends Function {
     }
 
     @Override
-    protected void _dump(Dumper dumper) {
+    protected void doDump(Dumper dumper) {
         dumper.printMember("name", name);
         dumper.printMember("isPrivate", isPrivate);
         dumper.printMember("params", params);

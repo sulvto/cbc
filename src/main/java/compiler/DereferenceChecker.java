@@ -1,13 +1,11 @@
 package compiler;
 
-import ast.AST;
-import ast.BlockNode;
-import ast.ExprNode;
-import ast.StmtNode;
+import ast.*;
 import entity.DefinedFunction;
 import entity.DefinedVariable;
 import exception.SemanticError;
 import exception.SemanticException;
+import type.Type;
 import type.TypeTable;
 import utils.ErrorHandler;
 
@@ -76,6 +74,34 @@ public class DereferenceChecker extends Visitor {
             } catch (SemanticError e) {
 
             }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(DereferenceNode node) {
+
+        super.visit(node);
+
+        if (!node.getExpr().isPointer()) {
+            undereferableError(node.location());
+        }
+        handleImplicitAddress(node);
+        return null;
+    }
+
+    @Override
+    public Void visit(AddressNode node) {
+
+        super.visit(node);
+        if (!node.getExpr().isLvalue()) {
+            semanticError(node.location(), "invalid expression for &");
+        }
+        Type base = node.getExpr().getType();
+        if (!node.getExpr().isLoadable()) {
+            node.setType(base);
+        } else {
+            node.setType(typeTable.pointerTo(base));
         }
         return null;
     }

@@ -110,7 +110,7 @@ public class AST extends Node {
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
         d.printNodeList("variables", definedVariables());
         d.printNodeList("functions", definedFunctions());
     }

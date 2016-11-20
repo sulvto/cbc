@@ -18,7 +18,7 @@ public class Parameter extends DefinedVariable {
     }
 
     @Override
-    protected void _dump(Dumper dumper) {
+    protected void doDump(Dumper dumper) {
         dumper.printMember("name", name);
         dumper.printMember("typeNode", typeNode);
     }

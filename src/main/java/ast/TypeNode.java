@@ -43,7 +43,7 @@ public class TypeNode extends Node {
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
         d.printMember("typeref", typeRef);
         d.printMember("type", type);
     }

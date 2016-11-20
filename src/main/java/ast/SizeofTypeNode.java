@@ -18,7 +18,7 @@ public class SizeofTypeNode extends ExprNode{
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
 
     }
 }

@@ -15,11 +15,6 @@ public abstract class StmtNode extends Node{
         return location;
     }
 
-    @Override
-    protected void _dump(Dumper d) {
-
-    }
-
     abstract public <S,E> S accept(ASTVisitor<S,E> visitor);
 
 }

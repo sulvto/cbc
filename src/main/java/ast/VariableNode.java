@@ -63,7 +63,7 @@ public class VariableNode extends LHSNode {
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
         if (type != null) {
             d.printMember("type", type);
         }

@@ -11,7 +11,7 @@ public class Slot extends Node {
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
 
     }
 }

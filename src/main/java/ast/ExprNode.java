@@ -46,6 +46,16 @@ public abstract class ExprNode extends Node {
         }
     }
 
+
+    public boolean isPointer() {
+        try {
+            return getType().isPointer();
+        } catch (SemanticError error) {
+            return false;
+        }
+    }
+
     public abstract <S, E> E accept(ASTVisitor<S, E> visitor);
+
 
 }

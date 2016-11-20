@@ -26,7 +26,7 @@ public abstract class CompositeTypeDefinition extends TypeDefinition {
     }
 
     @Override
-    protected void _dump(Dumper d) {
+    protected void doDump(Dumper d) {
         d.printMember("name",name);
         d.printNodeList("members",members);
     }
