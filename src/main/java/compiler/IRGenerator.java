@@ -6,6 +6,7 @@ import entity.DefinedVariable;
 import entity.LocalScope;
 import exception.SemanticException;
 import ir.*;
+import type.Type;
 import type.TypeTable;
 import utils.ErrorHandler;
 
@@ -304,7 +305,15 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
 
     @Override
     public Expr visit(UnaryOpNode node) {
-        return null;
+        if ("+".equals(node.getOperator())) {
+            return transformExpr(node.getExpr());
+        }
+        return new Uni(asmType(node.getType()), Op.internUnary(node.getOperator()), transformExpr(node.getExpr()));
+    }
+
+    private Type asmType(Type type) {
+        if(type.isVoid())return int_t();
+        return Type.get(type.size());
     }
 
     @Override

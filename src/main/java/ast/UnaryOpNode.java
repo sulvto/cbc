@@ -7,11 +7,12 @@ import type.Type;
  * Created by sulvto on 16-11-15.
  */
 public class UnaryOpNode extends ExprNode {
-    String op;
-    ExprNode expr;
+    private String operator;
+    private ExprNode expr;
+    private Type opType;
 
     public UnaryOpNode(String op, ExprNode exprNode) {
-        this.op = op;
+        this.operator = op;
         this.expr = exprNode;
     }
 
@@ -21,18 +22,36 @@ public class UnaryOpNode extends ExprNode {
 
     @Override
     public Type getType() {
-        return null;
+        return expr.getType();
+    }
+
+    public Type getOpType() {
+        return opType;
+    }
+
+    public void setOpType(Type opType) {
+        this.opType = opType;
+    }
+
+    public String getOperator() {
+        return operator;
     }
 
     @Override
-    public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return visitor.visit(this);
+    public Location location() {
+        return expr.location();
     }
 
 
     @Override
     protected void doDump(Dumper d) {
+        d.printMember("operator", operator);
+        d.printMember("expr", expr);
+    }
 
+    @Override
+    public <S, E> E accept(ASTVisitor<S, E> visitor) {
+        return visitor.visit(this);
     }
 
 

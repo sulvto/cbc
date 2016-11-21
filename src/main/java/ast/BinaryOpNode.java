@@ -7,9 +7,9 @@ import type.Type;
  * Created by sulvto on 16-11-15.
  */
 public class BinaryOpNode extends ExprNode {
-    String operator;
-    ExprNode left, right;
-    Type type;
+    private String operator;
+    private ExprNode left, right;
+    private Type type;
 
     public BinaryOpNode(ExprNode left, String op, ExprNode right) {
         super();
