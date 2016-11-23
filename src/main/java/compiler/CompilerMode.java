@@ -61,4 +61,8 @@ enum CompilerMode {
     public String toOption() {
         return option;
     }
+
+    public boolean requires(CompilerMode mode) {
+        return ordinal() >= mode.ordinal();
+    }
 }

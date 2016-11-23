@@ -11,4 +11,8 @@ public class IR {
     public IR(Location source, int defvars, int defuns, int funcdecls, ToplevelScope scope, ConstanTable table) {
 
     }
+
+    public void dump() {
+        // TODO
+    }
 }

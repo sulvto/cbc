@@ -1,5 +1,7 @@
 package compiler;
 
+import java.io.File;
+
 /**
  * Created by sulvto on 16-11-23.
  */
@@ -41,10 +43,35 @@ public class SourceFile implements LdArg {
     public boolean isKnownFileType() {
         String ext = extName(originalName);
         for (String e : KNOWN_EXTENSIONS) {
-            if(ext.equals(e)) return true;
+            if (ext.equals(e)) return true;
         }
         return false;
     }
+
+    public boolean isCflatSource() {
+        return EXT_CFLAT_SOURCE.equals(extName(currentName));
+    }
+
+    public boolean isAssemblySource() {
+        return EXT_ASSEMBLY_SOURCE.equals(extName(currentName));
+    }
+
+    public boolean isObjectFile() {
+        return EXT_OBJECT_FILE.equals(extName(currentName));
+    }
+
+    public boolean isSharedLibrary() {
+        return EXT_SHARED_LIBRARY.equals(extName(currentName));
+    }
+
+    public boolean isStaticLibrary() {
+        return EXT_STATIC_LIBRARY.equals(extName(currentName));
+    }
+
+    public boolean isExecutable() {
+        return EXT_EXECUTABLE_FILE.equals(extName(currentName));
+    }
+
 
     public String path() {
         return currentName;
@@ -54,9 +81,37 @@ public class SourceFile implements LdArg {
         return currentName;
     }
 
+    String asmFileName() {
+        return replaceExt(EXT_ASSEMBLY_SOURCE);
+    }
+
+    public String objFileName() {
+        return replaceExt(EXT_OBJECT_FILE);
+    }
+
+    private String replaceExt(String ext) {
+        return baseName(originalName, true) + ext;
+    }
+
+    private String baseName(String path) {
+        return new File(path).getName();
+    }
+
+    private String baseName(String path, boolean stripExt) {
+        if (stripExt) {
+            return new File(path).getName().replaceFirst("\\.[^.]^$", "");
+        } else {
+            return baseName(path);
+        }
+    }
+
     private String extName(String path) {
         int idx = path.lastIndexOf(".");
-        if(idx<0) return "";
+        if (idx < 0) return "";
         return path.substring(idx);
+    }
+
+    public void setCurrentName(String currentName) {
+        this.currentName = currentName;
     }
 }

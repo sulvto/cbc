@@ -1,5 +1,7 @@
 package compiler;
 
+import type.TypeTable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,8 @@ public class Options {
     }
 
     private CompilerMode mode;
+    private Platform platform = new X86Linux();
+    private String outputFileName;
     private List<LdArg> ldArgs;
     private List<SourceFile> sourceFiles;
     private LibraryLoader loader = new LibraryLoader();
@@ -33,9 +37,13 @@ public class Options {
                         parseError(mode.toOption() + " option and " + arg + " option is exclusive");
                     }
                     mode = CompilerMode.fromOption(arg);
-                } //TODO
+                } else if (arg.startsWith("--debug-parser")) {
+                    debugParser = true;
+                }else if (arg.startsWith("-o")) {
+                    outputFileName = getOptArg(arg, argIterator);
+                }
+                //TODO
                 else {
-
                     parseError("unknown option: " + arg);
                 }
             } else {
@@ -63,6 +71,22 @@ public class Options {
         }
 
         // TODO
+    }
+
+    private String getOptArg(String opt, ListIterator<String> args) {
+        String path = opt.substring(2);
+        if (path.length() != 0) {
+            return path;
+        } else {
+            return nextArg(opt, args);
+        }
+    }
+
+    private String nextArg(String opt, ListIterator<String> args) {
+        if (!args.hasNext()) {
+            parseError("missing argument for " + opt);
+        }
+        return args.next();
     }
 
     private List<SourceFile> selectSourceFiles(List<LdArg> ldArgs) {
@@ -94,5 +118,34 @@ public class Options {
 
     public LibraryLoader getLoader() {
         return loader;
+    }
+
+    public boolean isAssembleRequired() {
+        return mode.requires(CompilerMode.Assemble);
+    }
+
+    public boolean isLinkRequired() {
+        return mode.requires(CompilerMode.Link);
+    }
+
+    public String asmFileNameOf(SourceFile src) {
+        if (outputFileName != null && mode == CompilerMode.Compile) {
+            return outputFileName;
+        } else {
+            return src.asmFileName();
+        }
+    }
+
+    public String objFileNameOf(SourceFile src) {
+        if (outputFileName != null && mode == CompilerMode.Assemble) {
+            return outputFileName;
+        } else {
+            return src.objFileName();
+        }
+
+    }
+
+    public TypeTable typeTable() {
+        return platform.typeTable();
     }
 }
