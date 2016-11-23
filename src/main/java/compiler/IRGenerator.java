@@ -208,7 +208,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         popBreak();
         popContinue();
         label(contLabel);
-        cjump(node.location(),transformExpr(node.getCond()),begLabel,endLabel);
+        cjump(node.location(), transformExpr(node.getCond()), begLabel, endLabel);
         label(endLabel);
         return null;
     }
@@ -250,7 +250,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
 
     @Override
     public Void visit(ContinueNode node) {
-         try {
+        try {
             jump(node.location(), currentContinueTarget());
         } catch (JumpError error) {
             error(node, error.getMessage());
@@ -300,7 +300,48 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
 
     @Override
     public Expr visit(BinaryOpNode node) {
-        return null;
+        Expr right = transformExpr(node.getRight());
+        Expr left = transformExpr(node.getLeft());
+        Op op = Op.internBinary(node.getOperator(), node.getType().isSigned());
+        Type t = node.getType();
+        Type r = node.getRight().getType();
+        Type l = node.getLeft().getType();
+        if (isPointerDiff(op, r, l)) {
+            // ptr - ptr -> (ptr - ptr) / ptrBaseSize
+            Expr tmp = new Bin(asmType(t), op, left, right);
+            return new Bin(asmType(t), Op.S_DIV, tmp, ptrBaseSize(l));
+        } else if (isPointerArithmetic(op, l)) {
+            // ptr + int -> ptr + (int * ptrBaseSize)
+            return new Bin(asmType(t), op, left, new Bin(asmType(t), Op.MUL, right, ptrBaseSize(l)));
+        } else if (isPointerArithmetic(op, r)) {
+            // int + ptr -> (int * ptrBaseSize) + ptr
+            return new Bin(asmType(t), op, new Bin(asmType(t), Op.MUL, left, ptrBaseSize(r)), right);
+        } else {
+            // int + int
+            return new Bin(asmType(t), op, left, right);
+        }
+    }
+
+    private Expr ptrBaseSize(Type t) {
+        return new Int(ptrdiff_t(), t.getBaseType().size());
+    }
+
+    private Type ptrdiff_t() {
+        return Type.get(typeTable.getLongSize());
+    }
+
+    private boolean isPointerArithmetic(Op op, Type operandType) {
+        switch (op) {
+            case ADD:
+            case SUB:
+                return operandType.isPointer();
+            default:
+                return false;
+        }
+    }
+
+    private boolean isPointerDiff(Op op, Type r, Type l) {
+        return op == Op.SUB && l.isPointer() && l.isPointer();
     }
 
     @Override
@@ -312,7 +353,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     }
 
     private Type asmType(Type type) {
-        if(type.isVoid())return int_t();
+        if (type.isVoid()) return int_t();
         return Type.get(type.size());
     }
 
@@ -385,7 +426,6 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     public Expr visit(StringLiteralNode node) {
         return null;
     }
-
 
 
 }

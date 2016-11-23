@@ -10,4 +10,8 @@ public interface IRVisitor<S, E> {
     S visit(LabelStmt labelStmt);
 
     S visit(Jump jump);
+
+    E visit(Bin bin);
+
+    E visit(Int anInt);
 }
