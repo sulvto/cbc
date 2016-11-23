@@ -27,7 +27,7 @@ public class ErrorHandler {
         error(location.toString() + ":" + message);
     }
 
-    private void error(String message) {
+    public void error(String message) {
         stream.println(programId + ": error:" + message);
         nError++;
     }
