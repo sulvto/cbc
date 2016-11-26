@@ -5,6 +5,7 @@ import ast.BlockNode;
 import ast.VariableNode;
 import entity.*;
 import exception.SemanticException;
+import utils.ErrorHandler;
 
 import java.util.LinkedList;
 import java.util.List;

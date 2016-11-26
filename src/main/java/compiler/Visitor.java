@@ -31,27 +31,27 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
     }
 
     @Override
-    public Void visit(BlockNode node) {
-        for (DefinedVariable variable : node.getVariables()) {
+    public Void visit(BlockNode blockNode) {
+        for (DefinedVariable variable : blockNode.getVariables()) {
             if (variable.hasInitializer()) {
                 visitExpr(variable.getInitializer());
             }
         }
-        visitStmts(node.getStmtNodes());
+        visitStmts(blockNode.getStmtNodes());
         return null;
     }
 
     @Override
-    public Void visit(ExprStmtNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(ExprStmtNode exprStmtNode) {
+        visitExpr(exprStmtNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(IfNode node) {
-        visitExpr(node.getCond());
-        visitStmt(node.getThenBody());
-        StmtNode elseBody = node.getElseBody();
+    public Void visit(IfNode ifNode) {
+        visitExpr(ifNode.getCond());
+        visitStmt(ifNode.getThenBody());
+        StmtNode elseBody = ifNode.getElseBody();
         if (elseBody != null) {
             visitStmt(elseBody);
         }
@@ -59,66 +59,66 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
     }
 
     @Override
-    public Void visit(SwitchNode node) {
-        visitExpr(node.getCond());
-        visitStmts(node.getCases());
+    public Void visit(SwitchNode switchNode) {
+        visitExpr(switchNode.getCond());
+        visitStmts(switchNode.getCases());
         return null;
     }
 
     @Override
-    public Void visit(CaseNode node) {
-        visitExprs(node.getValues());
-        visitStmt(node.getBody());
+    public Void visit(CaseNode caseNode) {
+        visitExprs(caseNode.getValues());
+        visitStmt(caseNode.getBody());
         return null;
     }
 
     @Override
-    public Void visit(WhileNode node) {
-        visitExpr(node.getCond());
-        visitStmt(node.getBody());
+    public Void visit(WhileNode whileNode) {
+        visitExpr(whileNode.getCond());
+        visitStmt(whileNode.getBody());
         return null;
     }
 
     @Override
-    public Void visit(DoWhileNode node) {
-        visitStmt(node.getBody());
-        visitExpr(node.getCond());
+    public Void visit(DoWhileNode doWhileNode) {
+        visitStmt(doWhileNode.getBody());
+        visitExpr(doWhileNode.getCond());
         return null;
     }
 
     @Override
-    public Void visit(ForNode node) {
-        visitStmt(node.getInit());
-        visitExpr(node.getCond());
-        visitStmt(node.getIncr());
-        visitStmt(node.getBody());
+    public Void visit(ForNode forNode) {
+        visitStmt(forNode.getInit());
+        visitExpr(forNode.getCond());
+        visitStmt(forNode.getIncr());
+        visitStmt(forNode.getBody());
         return null;
     }
 
     @Override
-    public Void visit(BreakNode node) {
+    public Void visit(BreakNode breakNode) {
         return null;
     }
 
     @Override
-    public Void visit(ContinueNode node) {
+    public Void visit(ContinueNode continueNode) {
         return null;
     }
 
     @Override
-    public Void visit(GotoNode node) {
+    public Void visit(GotoNode gotoNode) {
         return null;
     }
 
     @Override
-    public Void visit(LabelNode node) {
-        visitStmt(node.getStmt());
+    public Void visit(LabelNode labelNode) {
+        visitStmt(labelNode.getStmt());
         return null;
     }
 
     @Override
-    public Void visit(ReturnNode node) {
-        ExprNode expr = node.getExpr();
+    public Void visit(ReturnNode returnNode) {
+        ExprNode expr = returnNode.getExpr();
         if (expr != null) {
             visitExpr(expr);
         }
@@ -130,24 +130,24 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
     //
 
     @Override
-    public Void visit(AssignNode node) {
-        visitExpr(node.getLhs());
-        visitExpr(node.getRhs());
+    public Void visit(AssignNode assignNode) {
+        visitExpr(assignNode.getLhs());
+        visitExpr(assignNode.getRhs());
         return null;
     }
 
     @Override
-    public Void visit(OpAssignNode node) {
-        visitExpr(node.getLhs());
-        visitExpr(node.getRhs());
+    public Void visit(OpAssignNode opAssignNode) {
+        visitExpr(opAssignNode.getLhs());
+        visitExpr(opAssignNode.getRhs());
         return null;
     }
 
     @Override
-    public Void visit(CondExprNode node) {
-        visitExpr(node.getCond());
-        visitExpr(node.getThenExpr());
-        ExprNode elseExpr = node.getElseExpr();
+    public Void visit(CondExprNode condExprNode) {
+        visitExpr(condExprNode.getCond());
+        visitExpr(condExprNode.getThenExpr());
+        ExprNode elseExpr = condExprNode.getElseExpr();
         if (elseExpr != null) {
             visitExpr(elseExpr);
         }
@@ -155,111 +155,111 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
     }
 
     @Override
-    public Void visit(LogicalOrNode node) {
-        visitExpr(node.getLeft());
-        visitExpr(node.getRight());
+    public Void visit(LogicalOrNode logicalOrNode) {
+        visitExpr(logicalOrNode.getLeft());
+        visitExpr(logicalOrNode.getRight());
         return null;
     }
 
     @Override
-    public Void visit(LogicalAndNode node) {
-        visitExpr(node.getLeft());
-        visitExpr(node.getRight());
+    public Void visit(LogicalAndNode logicalAndNode) {
+        visitExpr(logicalAndNode.getLeft());
+        visitExpr(logicalAndNode.getRight());
         return null;
     }
 
     @Override
-    public Void visit(BinaryOpNode node) {
-        visitExpr(node.getLeft());
-        visitExpr(node.getRight());
+    public Void visit(BinaryOpNode binaryOpNode) {
+        visitExpr(binaryOpNode.getLeft());
+        visitExpr(binaryOpNode.getRight());
         return null;
     }
 
     @Override
-    public Void visit(UnaryOpNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(UnaryOpNode unaryOpNode) {
+        visitExpr(unaryOpNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(PrefixOpNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(PrefixOpNode prefixOpNode) {
+        visitExpr(prefixOpNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(SuffixOpNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(SuffixOpNode suffixOpNode) {
+        visitExpr(suffixOpNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(ArefNode node) {
-        visitExpr(node.getExpr());
-        visitExpr(node.getIndex());
+    public Void visit(ArefNode arefNode) {
+        visitExpr(arefNode.getExpr());
+        visitExpr(arefNode.getIndex());
         return null;
     }
 
     @Override
-    public Void visit(MemberNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(MemberNode memberNode) {
+        visitExpr(memberNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(PtrMemberNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(PtrMemberNode ptrMemberNode) {
+        visitExpr(ptrMemberNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(FuncallNode node) {
-        visitExpr(node.getExpr());
-        visitExprs(node.getArgs());
+    public Void visit(FuncallNode funcallNode) {
+        visitExpr(funcallNode.getExpr());
+        visitExprs(funcallNode.getArgs());
         return null;
     }
 
     @Override
-    public Void visit(DereferenceNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(DereferenceNode dereferenceNode) {
+        visitExpr(dereferenceNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(AddressNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(AddressNode addressNode) {
+        visitExpr(addressNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(CastNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(CastNode castNode) {
+        visitExpr(castNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(SizeofExprNode node) {
-        visitExpr(node.getExpr());
+    public Void visit(SizeofExprNode sizeofExprNode) {
+        visitExpr(sizeofExprNode.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(SizeofTypeNode node) {
+    public Void visit(SizeofTypeNode sizeofTypeNode) {
         return null;
     }
 
     @Override
-    public Void visit(VariableNode node) {
+    public Void visit(VariableNode variableNode) {
         return null;
     }
 
     @Override
-    public Void visit(IntegerLiteralNode node) {
+    public Void visit(IntegerLiteralNode integerLiteralNode) {
         return null;
     }
 
     @Override
-    public Void visit(StringLiteralNode node) {
+    public Void visit(StringLiteralNode stringLiteralNode) {
         return null;
     }
 }

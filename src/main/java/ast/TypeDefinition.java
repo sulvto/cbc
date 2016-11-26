@@ -32,7 +32,7 @@ public abstract class TypeDefinition extends Node {
     }
 
     public TypeRef getTypeRef() {
-        return typeNode.typeRef();
+        return typeNode.getTypeRef();
     }
 
     public Type getType() {

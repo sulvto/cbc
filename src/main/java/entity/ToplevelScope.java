@@ -43,7 +43,7 @@ public class ToplevelScope extends Scope {
         return entity;
     }
 
-    public void declareEntity(Entity entity) {
+    public void declareEntity(Entity entity) throws SemanticException {
         Entity e = entityMap.get(entity.getName());
         if (e != null) {
             throw new SemanticException("duplicated declaration: " + entity.getName() + ": " + e.location() + " and " + entity.location());
@@ -51,7 +51,7 @@ public class ToplevelScope extends Scope {
         entityMap.put(entity.getName(), entity);
     }
 
-    public void defineEntity(Entity entity) {
+    public void defineEntity(Entity entity) throws SemanticException {
         Entity e = entityMap.get(entity.getName());
         if (e != null && e.isDefined()) {
             throw new SemanticException("duplicated definition: " + entity.getName() + ": " + e.location() + " and " + entity.location());

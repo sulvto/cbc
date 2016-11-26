@@ -41,7 +41,11 @@ public abstract class ParamSlots<T> {
         this.vararg = true;
     }
 
-    public Location getLocation() {
+    public Location location() {
         return location;
+    }
+
+    public boolean isVararg() {
+        return vararg;
     }
 }

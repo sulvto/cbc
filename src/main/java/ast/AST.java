@@ -148,7 +148,7 @@ public class AST extends Node {
         if (stmt == null) {
             return null;
         } else if (stmt instanceof ExprStmtNode) {
-            return ((ExprStmtNode) stmt).expr();
+            return ((ExprStmtNode) stmt).getExpr();
         } else if (stmt instanceof ReturnNode) {
             return ((ReturnNode) stmt).expr();
         }else {

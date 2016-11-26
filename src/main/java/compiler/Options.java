@@ -1,6 +1,7 @@
 package compiler;
 
 import type.TypeTable;
+import utils.ErrorHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +19,10 @@ public class Options {
     }
 
     private CompilerMode mode;
+
     private Platform platform = new X86Linux();
+    private AssemblerOptions asOptions = new AssemblerOptions();
+    private LinkerOptions ldOptions= new LinkerOptions();
     private String outputFileName;
     private List<LdArg> ldArgs;
     private List<SourceFile> sourceFiles;
@@ -104,7 +108,7 @@ public class Options {
         throw new Error(message);
     }
 
-    public CompilerMode getMode() {
+    public CompilerMode mode() {
         return mode;
     }
 
@@ -147,5 +151,13 @@ public class Options {
 
     public TypeTable typeTable() {
         return platform.typeTable();
+    }
+
+    public Assembler assembler(ErrorHandler errorHandler) {
+        return platform.assembler(errorHandler);
+    }
+
+    AssemblerOptions asOptions() {
+        return asOptions;
     }
 }

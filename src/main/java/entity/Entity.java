@@ -11,7 +11,7 @@ import type.Type;
  */
 public abstract class Entity implements Dumpable {
 
-    boolean isPrivate;
+    protected boolean isPrivate;
     protected String name;
     protected TypeNode typeNode;
     private long nRefered;
@@ -25,12 +25,12 @@ public abstract class Entity implements Dumpable {
         this.nRefered = 0;
     }
 
-    public TypeNode getTypeNode() {
+    public TypeNode typeNode() {
         return typeNode;
     }
 
-    public Type getType() {
-        return getTypeNode().getType();
+    public Type type() {
+        return typeNode().getType();
     }
 
     public String getName() {
@@ -70,7 +70,7 @@ public abstract class Entity implements Dumpable {
         this.memory = memory;
     }
 
-    public MemoryReference getMemory() {
+    public MemoryReference memory() {
         checkAddress();
         return memory;
     }
@@ -79,7 +79,7 @@ public abstract class Entity implements Dumpable {
         this.address = address;
     }
 
-    public Operand getAddress() {
+    public Operand address() {
         checkAddress();
         return address;
     }

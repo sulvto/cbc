@@ -1,29 +1,37 @@
 package ast;
 
 import type.Type;
+import type.TypeRef;
 
 /**
  * 字面量
  * Created by sulvto on 16-11-15.
  */
-public class LiteralNode extends ExprNode {
-    @Override
-    public Type getType() {
-        return null;
+public abstract class LiteralNode extends ExprNode {
+    protected Location location;
+    protected TypeNode typeNode;
+
+    public LiteralNode(Location location, TypeRef ref) {
+        this.location = location;
+        this.typeNode = new TypeNode(ref);
     }
 
     @Override
-    public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return null;
+    public Type getType() {
+        return typeNode.getType();
+    }
+
+    public TypeNode getTypeNode() {
+        return typeNode;
+    }
+
+    @Override
+    public boolean isConstant() {
+        return true;
     }
 
     @Override
     public Location location() {
-        return null;
-    }
-
-    @Override
-    protected void doDump(Dumper d) {
-
+        return location;
     }
 }

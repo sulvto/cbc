@@ -1,26 +1,24 @@
 package type;
 
+import ast.Location;
+
 /**
  * Created by sulvto on 16-11-15.
  */
-public class NamedType extends Type {
-    @Override
-    public long size() {
-        return 0;
+public abstract class NamedType extends Type {
+    private String name;
+    private Location location;
+
+    public NamedType(String name, Location location) {
+        this.name = name;
+        this.location = location;
     }
 
-    @Override
-    public boolean isSameType(Type other) {
-        return false;
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public boolean isCompatible(Type other) {
-        return false;
-    }
-
-    @Override
-    public boolean isCastableTo(Type target) {
-        return false;
+    public Location location() {
+        return this.location;
     }
 }

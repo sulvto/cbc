@@ -31,7 +31,7 @@ public class Compiler {
 
     public void commandMain(String[] args) {
         Options opts = parseOptions(args);
-        if (CompilerMode.CheckSyntax == opts.getMode()) {
+        if (CompilerMode.CheckSyntax == opts.mode()) {
             System.exit(checkSyntax(opts) ? 0 : 1);
         }
         try {
@@ -44,7 +44,7 @@ public class Compiler {
         }
     }
 
-    private void build(List<SourceFile> srcs, Options opts) {
+    private void build(List<SourceFile> srcs, Options opts) throws CompileException {
         for (SourceFile src : srcs) {
             // TODO
             if (src.isCflatSource()) {
@@ -65,15 +65,29 @@ public class Compiler {
 
     private void compile(String srcPath, String destPath, Options opts) throws SemanticException {
         AST ast = parseFile(srcPath, opts);
-        if (dumpAST(ast, opts.getMode())) return;
+        if (dumpAST(ast, opts.mode())) return;
         TypeTable types = opts.typeTable();
         AST sem = semanticAnalyze(ast, types, opts);
-        if (dumpSemant(ast, opts.getMode())) return;
+        if (dumpSemant(ast, opts.mode())) return;
         IR ir = new IRGenerator(types, errorHandler).generate(sem);
-        if (dumpIR(ir, opts.getMode())) return;
-        AssemblyCode asm = generateAssembly(ir, opts);
-        if (dumpAsm(asm, opts.getMode())) return;
-        writeFile(destPath, asm.toSource());
+        if (dumpIR(ir, opts.mode())) return;
+        // TODO
+//        AssemblyCode asm = generateAssembly(ir, opts);
+//        if (dumpAsm(asm, opts.mode())) return;
+//        writeFile(destPath, asm.toSource());
+    }
+
+    private AST semanticAnalyze(AST ast, TypeTable types, Options opts)throws SemanticException {
+        new LocalResolver(errorHandler).resolve(ast);
+        new TypeResolver(types, errorHandler).resolve(ast);
+        types.semanticCheck(errorHandler);
+        if (opts.mode() == CompilerMode.DumpReference) {
+            ast.dump();
+            return ast;
+        }
+        new DereferenceChecker(types, errorHandler).check(ast);
+        new TypeChecker(types,errorHandler).check(ast);
+        return ast;
     }
 
     private boolean dumpIR(IR ir, CompilerMode mode) {
@@ -132,9 +146,11 @@ public class Compiler {
     }
 
     private void link(Options opts) {
+        // TODO
     }
 
-    private void assemble(String path, String destPath, Options opts) {
+    private void assemble(String srcPath, String destPath, Options opts) {
+        opts.assembler(errorHandler).assemble(srcPath, destPath, opts.asOptions());
     }
 
     private boolean checkSyntax(Options opts) {

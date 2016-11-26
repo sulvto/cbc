@@ -8,13 +8,14 @@ import ir.Expr;
 import type.Type;
 
 /**
+ * DONE
  * Created by sulvto on 16-11-14.
  */
 public class DefinedVariable extends Variable {
-    ExprNode initializer;
-    Expr ir;
-    long sequence;
-    Symbol symbol;
+    protected ExprNode initializer;
+    protected Expr ir;
+    protected long sequence;
+    protected Symbol symbol;
 
     public DefinedVariable(boolean priv, TypeNode type, String name, ExprNode init) {
         super(priv, type, name);
@@ -34,8 +35,7 @@ public class DefinedVariable extends Variable {
 
     @Override
     public boolean isInitialized() {
-        // TODO
-        return false;
+        return hasInitializer();
     }
 
     public void setSequence(long sequence) {
@@ -48,10 +48,6 @@ public class DefinedVariable extends Variable {
 
     public boolean hasInitializer() {
         return initializer != null;
-    }
-
-    public boolean isInitializer() {
-        return hasInitializer();
     }
 
     public ExprNode getInitializer() {

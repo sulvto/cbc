@@ -1,11 +1,11 @@
 package entity;
 
+import asm.Label;
 import asm.Symbol;
 import ast.TypeNode;
 import compiler.Parameter;
 import type.Type;
 
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -30,7 +30,7 @@ public abstract class Function extends Entity {
     public abstract List<Parameter> parameters();
 
     public Type returnType() {
-        return getType().getFunctionType().returnType();
+        return type().getFunctionType().getReturnType();
     }
 
     public boolean isVoid() {

@@ -1,25 +1,24 @@
 package compiler;
 
 import ast.*;
-import entity.DefinedFunction;
-import entity.DefinedVariable;
-import entity.Entity;
-import entity.EntityVisitor;
+import entity.*;
+import type.CompositeType;
 import type.Type;
 import type.TypeTable;
+import utils.ErrorHandler;
 
 import java.util.List;
 
 /**
  * Created by sulvto on 16-11-19.
  */
-public class TypeResolver extends Visitor implements EntityVisitor<Void>, DeclarationVisitor<Void>{
+public class TypeResolver extends Visitor implements EntityVisitor<Void>, DeclarationVisitor<Void> {
     private final TypeTable typeTable;
-    private final Errorhandler errorhandler;
+    private final ErrorHandler errorHandler;
 
-    public TypeResolver(TypeTable typeTable, Errorhandler errorhandler) {
+    public TypeResolver(TypeTable typeTable, ErrorHandler errorHandler) {
         this.typeTable = typeTable;
-        this.errorhandler = errorhandler;
+        this.errorHandler = errorHandler;
     }
 
     public void resolve(AST ast) {
@@ -39,30 +38,45 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
         for (TypeDefinition typeDefinition : typeDefinitionList) {
             if (typeTable.isDefined(typeDefinition.getTypeRef())) {
 
-            }else{
-                typeTable.put(typeDefinition.getTypeRef(),typeDefinition.definingType());
+            } else {
+                typeTable.put(typeDefinition.getTypeRef(), typeDefinition.definingType());
             }
         }
     }
 
     @Override
     public Void visit(StructNode structNode) {
-        return null;
-    }
-
-    @Override
-    public Void visit(TypedefNode typedefNode) {
+        resolveCompositeType(structNode);
         return null;
     }
 
     @Override
     public Void visit(UnionNode unionNode) {
+        resolveCompositeType(unionNode);
+        return null;
+    }
+
+
+    public void resolveCompositeType(CompositeTypeDefinition compositeTypeDefinition) {
+        CompositeType type = (CompositeType) typeTable.get(compositeTypeDefinition.getTypeNode().getTypeRef());
+        if (type == null) {
+            throw new Error("cannot intern struct/union: " + compositeTypeDefinition.getName());
+        }
+        for (Slot s : type.getMembers()) {
+            bindType(s.getTypeNode());
+        }
+    }
+
+    @Override
+    public Void visit(TypedefNode typedefNode) {
+        bindType(typedefNode.getTypeNode());
+        bindType(typedefNode.realTypeNode());
         return null;
     }
 
     @Override
     public Void visit(DefinedVariable variable) {
-        bindType(variable.getTypeNode());
+        bindType(variable.typeNode());
         if (variable.hasInitializer()) {
             visitExpr(variable.getInitializer());
         }
@@ -70,37 +84,87 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
     }
 
     private void bindType(TypeNode typeNode) {
-        if(typeNode.isResolved()) return;
+        if (typeNode.isResolved()) return;
         typeNode.setType(typeTable.get(typeNode.getTypeRef()));
     }
 
     @Override
     public Void visit(UndefinedVariable variable) {
+        bindType(variable.typeNode());
+        return null;
+    }
+
+    @Override
+    public Void visit(Constant constant) {
+        visit(constant.)
         return null;
     }
 
     @Override
     public Void visit(DefinedFunction definedFunction) {
         resolvFunctionHeader(definedFunction);
-        visitStmt(definedFunction.getBody());
+        visitStmt(definedFunction.body());
         return null;
     }
 
-    private void resolvFunctionHeader(DefinedFunction definedFunction) {
-        bindType(definedFunction.getTypeNode());
-        for (Parameter parameter : definedFunction.parameters()) {
-            Type t = typeTable.getParamType(parameter.getTypeNode().getTypeRef());
-            parameter.getTypeNode().setType(t);
+    private void resolvFunctionHeader(Function fun) {
+        bindType(fun.typeNode());
+        for (Parameter parameter : fun.parameters()) {
+            Type t = typeTable.getParamType(parameter.typeNode().getTypeRef());
+            parameter.typeNode().setType(t);
         }
     }
 
     @Override
-    public Void visit(UndefinedFunction variable) {
+    public Void visit(UndefinedFunction function) {
+        resolvFunctionHeader(function);
         return null;
     }
 
     @Override
-    public Void visit(Constant constant) {
+    public Void visit(BlockNode blockNode) {
+        for (DefinedVariable var : blockNode.getVariables()) {
+            var.accept(this);
+        }
+        visitStmts(blockNode.stmts());
         return null;
+    }
+
+    @Override
+    public Void visit(CastNode castNode) {
+        bindType(castNode.getTypeNode());
+        super.visit(castNode);
+        return null;
+    }
+
+    @Override
+    public Void visit(SizeofExprNode sizeofExprNode) {
+        bindType(sizeofExprNode.getTypeNode());
+        super.visit(sizeofExprNode);
+        return null;
+    }
+
+    @Override
+    public Void visit(SizeofTypeNode sizeofTypeNode) {
+        bindType(sizeofTypeNode.getOperandTypeNode());
+        bindType(sizeofTypeNode.getTypeNode());
+        super.visit(sizeofTypeNode);
+        return null;
+    }
+
+    @Override
+    public Void visit(IntegerLiteralNode integerLiteralNode) {
+        bindType(integerLiteralNode.getTypeNode());
+        return null;
+    }
+
+    @Override
+    public Void visit(StringLiteralNode stringLiteralNode) {
+        bindType(stringLiteralNode.getTypeNode());
+        return null;
+    }
+
+    private void error(Node node, String message) {
+        errorHandler.error(node.location(), message);
     }
 }

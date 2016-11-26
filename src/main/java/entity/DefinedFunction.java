@@ -25,7 +25,7 @@ public class DefinedFunction extends Function {
         this.body = body;
     }
 
-    public BlockNode getBody() {
+    public BlockNode body() {
         return body;
     }
 
@@ -38,7 +38,7 @@ public class DefinedFunction extends Function {
     }
 
     public LocalScope lvarScope() {
-        return getBody().getScope();
+        return body().getScope();
     }
 
     public void setScope(LocalScope scope) {

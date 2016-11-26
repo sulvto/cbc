@@ -20,15 +20,19 @@ public class BlockNode extends StmtNode {
         this.stmts= stmts;
     }
 
-    public List<StmtNode> getStmts() {
-        return stmts;
-    }
-
     public List<DefinedVariable> getVariables() {
         return variables;
     }
 
-    public LocalScope getScope() {
+    public List<StmtNode> stmts() {
+        return stmts;
+    }
+
+    public List<DefinedVariable> variables() {
+        return variables;
+    }
+
+    public LocalScope scope() {
         return scope;
     }
 

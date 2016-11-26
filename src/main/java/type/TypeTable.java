@@ -1,7 +1,9 @@
 package type;
 
 import ast.Slot;
+import utils.ErrorHandler;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +52,10 @@ public class TypeTable {
                 return t;
             } else if (ref instanceof FunctionTypeRef) {
                 FunctionTypeRef functionTypeRef = (FunctionTypeRef) ref;
-                Type t = new FunctionType(get(functionTypeRef.getReturnType()), functionTypeRef.params().internTypes(this));
+                Type t = new FunctionType(get(functionTypeRef.getReturnType()), functionTypeRef.getParams().internTypes(this));
+                table.put(functionTypeRef, t);
+                return t;
+
             }
             throw new Error("unregistered type: " + ref.toString());
         }
@@ -128,5 +133,48 @@ public class TypeTable {
 
     public IntegerType unsignedLong() {
         return (IntegerType) table.get(IntegerTypeRef.ulongRef());
+    }
+
+    public void semanticCheck(ErrorHandler errorHandler) {
+        for (Type t : types()) {
+            if (t instanceof CompositeType) {
+                checkVoidMembers((CompositeType) t, errorHandler);
+                checkDuplicatedMembers((CompositeType) t, errorHandler);
+            } else if (t instanceof ArrayType) {
+                checkVoidMembers((ArrayType) t, errorHandler);
+            }
+            checkRecursiveDefinition(t, errorHandler);
+        }
+    }
+
+    private void checkDuplicatedMembers(CompositeType t, ErrorHandler errorHandler) {
+        Map<String, Slot> slotMap = new HashMap<>();
+
+        for (Slot s : t.getMembers()) {
+            if (slotMap.containsKey(s.getName())) {
+                errorHandler.error(t.location(), t.toString() + " has duplicated member: " + s.getName());
+            } else {
+                slotMap.put(s.getName(), s);
+            }
+        }
+    }
+
+
+    private void checkVoidMembers(ArrayType t, ErrorHandler errorHandler) {
+        if (t.getBaseType().isVoid()) {
+            errorHandler.error("array cannot contain void");
+        }
+    }
+
+    private void checkVoidMembers(CompositeType t, ErrorHandler errorHandler) {
+        for (Slot s : t.getMembers()) {
+            if (s.getType().isVoid()) {
+                errorHandler.error("array cannot contain void");
+            }
+        }
+    }
+
+    private Collection<Type> types() {
+        return table.values();
     }
 }
