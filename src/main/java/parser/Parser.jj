@@ -191,7 +191,7 @@ Declarations top_defs():
     Constant defconst;
     StructNode defstruct;
     UnionNode defunion;
-    TypedeNode typedef;
+    TypedefNode typedef;
 }
 {
     (LOOKAHEAD(storage() typeref() <IDENTIFIER> ")")
@@ -238,6 +238,19 @@ String storage():{}
     [<STATIC>]
 }
 
+Constant defconst():
+{
+    TypeNode type;
+     String name;
+     ExprNode value;
+}
+{
+    <CONST> type=type() name=name() "=" value=expr()
+    {
+        return new Constant(type,name,value);
+    }
+}
+
 DefinedFunction defun():
 {
     boolean priv;
@@ -254,7 +267,7 @@ DefinedFunction defun():
     }
 }
 
-String parsms():{}
+Params params():{}
 {
      LOOKAHEAD(<VOID> ")") <VOID>
    | fixedparams() ["," "..."]
@@ -297,7 +310,7 @@ List<DefinedVariable> defvar_list():
 
 String  defstruct():{}
 {
-    <STRUCT> name() member_liat() ";"
+    <STRUCT> name() member_list() ";"
 }
 
 String defunion():{}
@@ -315,7 +328,7 @@ String slot():{}
     type() name()
 }
 
-String typedef() :{}
+TypedefNode typedef() :{}
 {
     <TYPEDEF> typeref() <IDENTIFIER> ";"
 }
@@ -325,17 +338,22 @@ String type():{}
     typeref()
 }
 
-String typeref():{}
+TypeRef typeref():{
+    Token t;
+    TypeRef baseType;
+    long length;
+    List<TypeRef> paramDescs;
+}
 {
-    typeref_base()
-        ( LOOKAHEAD(2) "[" "]"
-        | "[" <INTEGER> "]"
-        | "*"
-        | "(" param_typerefs() ")"
+    baseType=typeref_base()
+        ( LOOKAHEAD(2) "[" "]"                  { return new ArrayTypeRef(baseType); }
+        | "[" length=<INTEGER> "]"              { return new ArrayTypeRef(baseType,length); }
+        | "*"                                   { return new PointerTypeRef(baseType); }
+        | "(" paramDescs=param_typerefs() ")"   { return new ParamTypeRefs(paramDescs); }
         )*
 }
 
-String typeref_base():{}
+TypeRef typeref_base():{}
 {
      <VOID>
    | <CHAR>
@@ -351,6 +369,14 @@ String typeref_base():{}
    | LOOKAHEAD({isType(getToken(1).image)})<IDENTIFIER>
 }
 
+List<TypeRef> param_typerefs():
+{
+
+}
+{
+    // TODO
+    (<TODO>){return new ArrayList();}
+}
 
 List<StmtNode> stmts ():
 {
@@ -364,7 +390,7 @@ List<StmtNode> stmts ():
     }
 }
 
-String  stmt():{}
+StmtNode stmt():{}
 {
     (";"
     | LOOKAHEAD(2) labeled_stmt()
