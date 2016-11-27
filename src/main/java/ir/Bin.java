@@ -9,6 +9,7 @@ import type.Type;
 public class Bin extends Expr {
     private Op op;
     private Expr left, right;
+
     public Bin(Type type, Op op, Expr left, Expr right) {
         super(type);
         this.op = op;

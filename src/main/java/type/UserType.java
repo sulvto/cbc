@@ -74,8 +74,8 @@ public class UserType extends NamedType {
     }
 
     @Override
-    public boolean isScaler() {
-        return realType().isScaler();
+    public boolean isScalar() {
+        return realType().isScalar();
     }
 
     @Override

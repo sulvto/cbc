@@ -1,7 +1,5 @@
 package ir;
 
-import ast.Dumpable;
-import ast.Dumper;
 import ast.Location;
 
 /**

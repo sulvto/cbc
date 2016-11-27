@@ -22,24 +22,47 @@ public class ArefNode extends LHSNode {
         return index;
     }
 
+    // isMultiDimension a[x][y][z] = true
+    // isMultiDimension a[x][y] = true
+    // isMultiDimension a[x] = false
+    public boolean isMultiDimension() {
+        return (expr instanceof ArefNode) && !expr.origType().isPointer();
+    }
 
-    @Override
-    public Type origType() {
-        return null;
+    public ExprNode baseExpr() {
+        return isMultiDimension() ? ((ArefNode) expr).baseExpr() : expr;
+    }
+
+    public long elementSize() {
+        return origType().allocSize();
+    }
+
+    public Type length() {
+        return ((ArefNode) expr).origType().length();
     }
 
     @Override
-    public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return null;
+    protected Type origType() {
+        return expr.origType().getBaseType();
     }
 
     @Override
     public Location location() {
-        return null;
+        return expr.location();
     }
 
     @Override
     protected void doDump(Dumper d) {
-
+        if (type != null) {
+            d.printMember("type", type);
+        }
+        d.printMember("expr", expr);
+        d.printMember("index", index);
     }
+
+    @Override
+    public <S, E> E accept(ASTVisitor<S, E> visitor) {
+        return visitor.visit(this);
+    }
+
 }

@@ -35,4 +35,13 @@ public class ErrorHandler {
     public boolean errorOccured() {
         return nError > 0;
     }
+
+    public void warn(Location location, String message) {
+        warn(location.toString() + ": " + message);
+    }
+
+    public void warn(String message) {
+        stream.println(programId + ": warning: " + message);
+        nWarning++;
+    }
 }

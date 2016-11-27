@@ -1,13 +1,21 @@
+
 package ast;
 
 import java.util.List;
 
 /**
+ * DONE
  * Created by sulvto on 16-11-15.
  */
 public class SwitchNode extends StmtNode {
-    ExprNode cond;
-    List<StmtNode> cases;
+    protected ExprNode cond;
+    protected List<StmtNode> cases;
+
+    public SwitchNode(Location location, ExprNode cond, List<StmtNode> cases) {
+        super(location);
+        this.cond = cond;
+        this.cases = cases;
+    }
 
     public List<StmtNode> getCases() {
         return cases;
@@ -15,6 +23,12 @@ public class SwitchNode extends StmtNode {
 
     public ExprNode getCond() {
         return cond;
+    }
+
+    @Override
+    protected void doDump(Dumper d) {
+        d.printMember("cond", cond);
+        d.printNodeList("cases", cases);
     }
 
     @Override

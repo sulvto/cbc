@@ -1,7 +1,8 @@
 package ir;
 
-import ast.Dumpable;
-import ast.Dumper;
+import asm.ImmediateValue;
+import asm.MemoryReference;
+import asm.Operand;
 import entity.Entity;
 import type.Type;
 
@@ -58,7 +59,8 @@ public abstract class Expr implements Dumpable {
         doDump(d);
     }
 
+    protected abstract void doDump(Dumper d);
+
     public abstract <S, E> E accept(IRVisitor<S, E> visitor);
 
-    protected abstract void doDump(Dumper d);
 }

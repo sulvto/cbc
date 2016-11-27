@@ -9,7 +9,7 @@ import java.util.List;
  * Created by sulvto on 16-11-18.
  */
 public abstract class Scope {
-    List<LocalScope> children;
+    protected List<LocalScope> children;
 
     public Scope() {
         children = new ArrayList<>();
@@ -27,7 +27,4 @@ public abstract class Scope {
     abstract public Scope getParent();
 
     abstract public Entity getEntity(String name) throws SemanticException;
-
-
-
 }

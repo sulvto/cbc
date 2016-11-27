@@ -5,8 +5,8 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class PrefixOpNode extends UnaryArithmeticOpNode {
-    String op;
-    ExprNode expr;
+    protected String op;
+    protected ExprNode expr;
 
     public PrefixOpNode(String op, ExprNode exprNode) {
         super(op,exprNode);

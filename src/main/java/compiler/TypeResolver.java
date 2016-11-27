@@ -96,18 +96,19 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
 
     @Override
     public Void visit(Constant constant) {
-        visit(constant.)
+        bindType(constant.typeNode());
+        visitExpr(constant.getValue());
         return null;
     }
 
     @Override
     public Void visit(DefinedFunction definedFunction) {
-        resolvFunctionHeader(definedFunction);
+        resolveFunctionHeader(definedFunction);
         visitStmt(definedFunction.body());
         return null;
     }
 
-    private void resolvFunctionHeader(Function fun) {
+    private void resolveFunctionHeader(Function fun) {
         bindType(fun.typeNode());
         for (Parameter parameter : fun.parameters()) {
             Type t = typeTable.getParamType(parameter.typeNode().getTypeRef());
@@ -117,7 +118,7 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
 
     @Override
     public Void visit(UndefinedFunction function) {
-        resolvFunctionHeader(function);
+        resolveFunctionHeader(function);
         return null;
     }
 

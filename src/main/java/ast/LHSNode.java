@@ -7,7 +7,7 @@ import type.Type;
  * Created by sulvto on 16-11-15.
  */
 public abstract class LHSNode extends ExprNode {
-    Type type;
+    protected Type type;
 
     @Override
     public boolean isLvalue() {
@@ -23,6 +23,6 @@ public abstract class LHSNode extends ExprNode {
         this.type = type;
     }
 
-    public abstract Type origType();
+    protected abstract Type origType();
 
 }

@@ -7,9 +7,9 @@ import type.Type;
  * Created by sulvto on 16-11-15.
  */
 public class UnaryOpNode extends ExprNode {
-    private String operator;
-    private ExprNode expr;
-    private Type opType;
+    protected String operator;
+    protected ExprNode expr;
+    protected Type opType;
 
     public UnaryOpNode(String op, ExprNode exprNode) {
         this.operator = op;

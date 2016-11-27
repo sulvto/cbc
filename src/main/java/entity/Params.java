@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by sulvto on 16-11-19.
  */
-public class Params extends ParamSlots<Parameter> implements Dumpable{
+public class Params extends ParamSlots<Parameter> implements Dumpable {
     public Params(Location location, List<Parameter> paramDescs) {
         super(location, paramDescs, false);
     }
@@ -39,8 +39,6 @@ public class Params extends ParamSlots<Parameter> implements Dumpable{
     public boolean equals(Params other) {
         return other.vararg == vararg && other.paramDescriptors.equals(paramDescriptors);
     }
-
-
 
     @Override
     public void dump(Dumper d) {

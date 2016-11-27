@@ -4,7 +4,7 @@ package ast;
  * Created by sulvto on 16-11-15.
  */
 public class ReturnNode extends StmtNode {
-    ExprNode expr;
+    protected ExprNode expr;
 
     public ReturnNode(Location location, ExprNode expr) {
         super(location);

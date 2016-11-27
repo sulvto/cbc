@@ -23,7 +23,7 @@ public class PointerType extends Type {
     }
 
     @Override
-    public boolean isScaler() {
+    public boolean isScalar() {
         return true;
     }
 

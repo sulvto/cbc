@@ -30,7 +30,7 @@ public abstract class Function extends Entity {
     public abstract List<Parameter> parameters();
 
     public Type returnType() {
-        return type().getFunctionType().getReturnType();
+        return getType().getFunctionType().getReturnType();
     }
 
     public boolean isVoid() {

@@ -24,15 +24,12 @@ public class BlockNode extends StmtNode {
         return variables;
     }
 
-    public List<StmtNode> stmts() {
+    public List<StmtNode> getStmts() {
         return stmts;
     }
 
-    public List<DefinedVariable> variables() {
-        return variables;
-    }
 
-    public LocalScope scope() {
+    public LocalScope getScope() {
         return scope;
     }
 

@@ -27,18 +27,30 @@ public class CondExprNode extends ExprNode {
         return thenExpr;
     }
 
+    public void setElseExpr(ExprNode elseExpr) {
+        this.elseExpr = elseExpr;
+    }
+
     @Override
     public Type getType() {
-        return null;
+        return thenExpr.getType();
     }
 
     @Override
     public <S, E> E accept(ASTVisitor<S, E> visitor) {
-        return null;
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Location location() {
+        return cond.location();
     }
 
     @Override
     protected void doDump(Dumper d) {
-
+        d.printMember("cond", cond);
+        d.printMember("thenExpr", thenExpr);
+        d.printMember("elseExpr", elseExpr);
     }
+
 }

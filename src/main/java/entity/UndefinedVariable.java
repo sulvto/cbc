@@ -7,12 +7,17 @@ import ast.TypeNode;
  * Created by sulvto on 16-11-26.
  */
 public class UndefinedVariable extends Variable {
-    public UndefinedVariable(boolean priv, TypeNode type, String name) {
-        super(priv, type, name);
+    public UndefinedVariable(TypeNode type, String name) {
+        super(false, type, name);
     }
 
     @Override
     public boolean isDefined() {
+        return false;
+    }
+
+    @Override
+    public boolean isPrivate() {
         return false;
     }
 
@@ -23,11 +28,13 @@ public class UndefinedVariable extends Variable {
 
     @Override
     protected void doDump(Dumper dumper) {
-
+        dumper.printMember("name", name);
+        dumper.printMember("isPrivate", isPrivate());
+        dumper.printMember("typeNode",typeNode);
     }
 
     @Override
     public <T> T accept(EntityVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
 }

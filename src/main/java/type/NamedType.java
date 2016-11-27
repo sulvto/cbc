@@ -6,7 +6,7 @@ import ast.Location;
  * Created by sulvto on 16-11-15.
  */
 public abstract class NamedType extends Type {
-    private String name;
+    protected String name;
     private Location location;
 
     public NamedType(String name, Location location) {

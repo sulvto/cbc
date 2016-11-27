@@ -4,7 +4,6 @@ import entity.DefinedFunction;
 import entity.DefinedVariable;
 import entity.Entity;
 import ir.IR;
-import jdk.nashorn.internal.ir.ReturnNode;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -106,7 +105,7 @@ public class AST extends Node {
     }
 
     public IR ir(){
-        return new IR(source, declarations.getDefvars(), declarations.getDefuns(), declarations.getFuncdecls(), scope, constanTable);
+        return new IR(source, declarations.defvars(), declarations.defuns(), declarations.funcdecls(), scope, constanTable);
     }
 
     @Override
@@ -133,7 +132,7 @@ public class AST extends Node {
 
     public StmtNode getSingleMainStmt() {
         for (DefinedFunction f : definedFunctions()) {
-            if ("main".equals(f.name())) {
+            if ("main".equals(f.getName())) {
                 if (f.body().stmts().isEmpty()) {
                     return null;
                 }
@@ -150,7 +149,7 @@ public class AST extends Node {
         } else if (stmt instanceof ExprStmtNode) {
             return ((ExprStmtNode) stmt).getExpr();
         } else if (stmt instanceof ReturnNode) {
-            return ((ReturnNode) stmt).expr();
+            return ((ReturnNode) stmt).getExpr();
         }else {
             return null;
         }

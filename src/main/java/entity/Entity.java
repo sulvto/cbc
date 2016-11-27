@@ -1,5 +1,7 @@
 package entity;
 
+import asm.MemoryReference;
+import asm.Operand;
 import ast.Dumpable;
 import ast.Dumper;
 import ast.Location;
@@ -25,12 +27,12 @@ public abstract class Entity implements Dumpable {
         this.nRefered = 0;
     }
 
-    public TypeNode typeNode() {
+    public TypeNode getTypeNode() {
         return typeNode;
     }
 
-    public Type type() {
-        return typeNode().getType();
+    public Type getType() {
+        return getTypeNode().getType();
     }
 
     public String getName() {
@@ -65,6 +67,10 @@ public abstract class Entity implements Dumpable {
     public abstract boolean isDefined();
 
     public abstract boolean isInitialized();
+
+    public boolean isConstant() {
+        return false;
+    }
 
     public void setMemory(MemoryReference memory) {
         this.memory = memory;

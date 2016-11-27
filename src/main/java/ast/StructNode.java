@@ -7,6 +7,7 @@ import type.TypeRef;
 import java.util.List;
 
 /**
+ * DONE
  * 结构体的定义
  * Created by sulvto on 16-11-15.
  */
@@ -16,6 +17,9 @@ public class StructNode extends CompositeTypeDefinition {
         super(location, typeRef, name, members);
     }
 
+    public boolean isStruct() {
+        return true;
+    }
     @Override
     public Type definingType() {
         return new StructType(name,getMembers(),location());
@@ -28,6 +32,6 @@ public class StructNode extends CompositeTypeDefinition {
 
     @Override
     public String kind() {
-        return null;
+        return "struct";
     }
 }

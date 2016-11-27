@@ -2,6 +2,7 @@ package ast;
 
 import type.Type;
 import type.TypeRef;
+import utils.TextUtils;
 
 import java.io.PrintStream;
 import java.util.List;

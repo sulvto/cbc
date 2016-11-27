@@ -1,20 +1,18 @@
 package ast;
 
 /**
+ * DONE
  * 后置的++和--
  * Created by sulvto on 16-11-15.
  */
 public class SuffixOpNode extends UnaryArithmeticOpNode {
-    String op;
-    ExprNode expr;
 
     public SuffixOpNode(String op, ExprNode exprNode) {
-        this.op = op;
-        this.expr = exprNode;
+        super(op, exprNode);
     }
 
     @Override
-    public ExprNode getExpr() {
-        return expr;
+    public <S, E> E accept(ASTVisitor<S, E> visitor) {
+        return visitor.visit(this);
     }
 }

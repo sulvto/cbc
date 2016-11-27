@@ -1,16 +1,21 @@
 package entity;
 
 import exception.SemanticException;
+import type.Type;
+import utils.ErrorHandler;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by sulvto on 16-11-18.
  */
 public class LocalScope extends Scope {
-    Scope parent;
-    Map<String, DefinedVariable> variables;
+    protected Scope parent;
+    protected Map<String, DefinedVariable> variables;
 
     public LocalScope(Scope parent) {
         super();
@@ -26,12 +31,32 @@ public class LocalScope extends Scope {
 
     @Override
     public ToplevelScope toplevel() {
-        return null;
+        return parent.toplevel();
     }
 
     @Override
     public Scope getParent() {
         return parent;
+    }
+
+    public boolean isDefinedLocally(String name) {
+        return variables.containsKey(name);
+    }
+
+
+    public void defineVariable(DefinedVariable variable) {
+        String variableName = variable.getName();
+        if (variables.containsKey(variableName)) {
+            throw new Error("duplicated variable :" + variableName);
+        } else {
+            variables.put(variableName, variable);
+        }
+    }
+
+    public DefinedVariable allocateTmp(Type type) {
+        DefinedVariable vat = DefinedVariable.tem(type);
+        defineVariable(vat);
+        return vat;
     }
 
     @Override
@@ -43,20 +68,55 @@ public class LocalScope extends Scope {
         return parent.getEntity(name);
     }
 
-    public boolean isDefinedLocally(String name) {
-        return variables.containsKey(name);
+    /**
+     * all local variable in this scope.
+     *
+     * @return
+     */
+    public List<DefinedVariable> allLocalVariables() {
+        List<DefinedVariable> result = new ArrayList<>();
+        for (LocalScope s : allLocalScopes()) {
+            result.addAll(s.localVariable());
+        }
+        return result;
     }
 
-    public void defineEntity(DefinedVariable variable) {
-
+    public List<DefinedVariable> localVariable() {
+        return variables.values()
+                .stream()
+                .filter(variable -> !variable.isPrivate())
+                .collect(Collectors.toList());
     }
 
-    public void defineVariable(DefinedVariable variable) {
-        String variableName = variable.getName();
-        if (variables.containsKey(variableName)) {
-            throw new SemanticException("duplicated variable :" + variableName);
-        } else {
-            variables.put(variableName, variable);
+    public List<DefinedVariable> staticLocalVariable() {
+        return allLocalScopes()
+                .stream()
+                .flatMap(localScope -> localScope.variables.values().stream())
+                .filter(variable -> !variable.isPrivate())
+                .collect(Collectors.toList());
+    }
+
+    private List<LocalScope> allLocalScopes() {
+        List<LocalScope> result = new ArrayList<>();
+        collectScope(result);
+        return result;
+    }
+
+    private void collectScope(List<LocalScope> list) {
+        list.add(this);
+        for (LocalScope s : children) {
+            s.collectScope(list);
+        }
+    }
+
+    public void checkReferences(ErrorHandler errorHandler) {
+        for (DefinedVariable var : variables.values()) {
+            if (!var.isRefered()) {
+                errorHandler.warn(var.location(), "unused variable: " + var.getName());
+            }
+        }
+        for (LocalScope c : children) {
+            c.checkReferences(errorHandler);
         }
     }
 }
