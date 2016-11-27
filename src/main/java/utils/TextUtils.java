@@ -7,8 +7,8 @@ import java.io.UnsupportedEncodingException;
 /**
  * Created by sulvto on 16-11-15.
  */
-public class TextUtils {
-    private static byte vtab = 013;
+public abstract class TextUtils {
+    private final static byte vtab = 013;
 
     public static String dumpString(String str) {
         try {

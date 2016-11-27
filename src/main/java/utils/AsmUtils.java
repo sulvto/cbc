@@ -3,9 +3,10 @@ package utils;
 /**
  * Created by sulvto on 16-11-27.
  */
-public class AsmUtils {
-    public static long align(long offset, long maxAlign) {
-        // TODO
-        return 0;
+public final class AsmUtils {
+    private AsmUtils() {}
+
+    public static long align(long n, long alignment) {
+        return (n + alignment - 1) / alignment * alignment;
     }
 }

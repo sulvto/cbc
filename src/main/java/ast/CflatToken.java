@@ -7,8 +7,7 @@ import java.util.Iterator;
  * Created by sulvto on 16-11-14.
  */
 public class CflatToken implements Iterator<CflatToken>{
-    private
-    Token token;
+    private Token token;
     private boolean isSpecial;
 
     public CflatToken(Token token) {
