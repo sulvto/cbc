@@ -3,6 +3,7 @@ package ast;
 import entity.DefinedFunction;
 import entity.DefinedVariable;
 import entity.Entity;
+import entity.ToplevelScope;
 import ir.IR;
 
 import java.io.PrintStream;
@@ -133,10 +134,10 @@ public class AST extends Node {
     public StmtNode getSingleMainStmt() {
         for (DefinedFunction f : definedFunctions()) {
             if ("main".equals(f.getName())) {
-                if (f.body().stmts().isEmpty()) {
+                if (f.body().getStmts().isEmpty()) {
                     return null;
                 }
-                return f.body().stmts().get(0);
+                return f.body().getStmts().get(0);
             }
         }
         return null;

@@ -308,24 +308,51 @@ List<DefinedVariable> defvar_list():
     }
 }
 
-String  defstruct():{}
+StructNode  defstruct():
 {
-    <STRUCT> name() member_list() ";"
+    Token t;
+    String name;
+    List<Slot> memberList;
+}
+{
+    <STRUCT> name=name() memberList=member_list() ";"
+        {
+            return new StructNode(location(t),new StructTypeRef(name),name,memberList);
+        }
 }
 
-String defunion():{}
+UnionNode defunion():
 {
-    <UNION> name() member_list() ";"
+    Token t;
+    String name;
+    List<Slot> memberList;
+}
+{
+    <UNION> name=name() memberList=member_list() ";"
+        {
+            return new UnionNode(location(t),new UnionTypeRef(name),name,memberList);
+        }
 }
 
-String member_list():{}
+List<Slot> member_list():
 {
-    "{" (slot() ";")* "}"
+    List<Slot> memberList = new ArrayList<Slot>();
+    Slot slot;
+}
+{
+    "{" (slot=slot() ";" {memberList.add(s);})* "}"
+        {
+            return memberList;
+        }
 }
 
-String slot():{}
+Solt slot():
 {
-    type() name()
+    TypeNode type;
+    String name;
+}
+{
+    type=type() name=name(){ return new Solt(type,name); }
 }
 
 TypedefNode typedef() :{}
@@ -333,23 +360,25 @@ TypedefNode typedef() :{}
     <TYPEDEF> typeref() <IDENTIFIER> ";"
 }
 
-String type():{}
+TypeNode type():
 {
-    typeref()
+    TypeRef ref;
+}
+{
+    ref=typeref(){ return new TypeNode(ref); }
 }
 
 TypeRef typeref():{
     Token t;
     TypeRef baseType;
-    long length;
-    List<TypeRef> paramDescs;
+    ParamTypeRefs params;
 }
 {
     baseType=typeref_base()
-        ( LOOKAHEAD(2) "[" "]"                  { return new ArrayTypeRef(baseType); }
-        | "[" length=<INTEGER> "]"              { return new ArrayTypeRef(baseType,length); }
-        | "*"                                   { return new PointerTypeRef(baseType); }
-        | "(" paramDescs=param_typerefs() ")"   { return new ParamTypeRefs(paramDescs); }
+        ( LOOKAHEAD(2) "[" "]"              { return new ArrayTypeRef(baseType); }
+        | "[" t=<INTEGER> "]"               { return new ArrayTypeRef(baseType,intergerValue(t.image)); }
+        | "*"                               { return new PointerTypeRef(baseType); }
+        | "(" params=param_typerefs() ")"   { return new FunctionTypeRef(baseType,params); }
         )*
 }
 
@@ -369,13 +398,21 @@ TypeRef typeref_base():{}
    | LOOKAHEAD({isType(getToken(1).image)})<IDENTIFIER>
 }
 
-List<TypeRef> param_typerefs():
+ParamTypeRefs param_typerefs():
 {
-
+    ParamTypeRefs params;
 }
 {
-    // TODO
-    (<TODO>){return new ArrayList();}
+    LOOKAHEAD(<VOID>")")
+    <VOID>
+    {
+        return new ParamTypeRefs(new ArrayLiat<TypeRef>());
+    }
+    | params=fixedparam_typerefs()
+        ["," "..." {params.acceptVarargs();}]
+    {
+        return params;
+    }
 }
 
 List<StmtNode> stmts ():
@@ -390,21 +427,28 @@ List<StmtNode> stmts ():
     }
 }
 
-StmtNode stmt():{}
+StmtNode stmt():
+{
+    StmtNode n = null;
+    ExprNode e = null;
+}
 {
     (";"
-    | LOOKAHEAD(2) labeled_stmt()
-    | expr() ";"
-    | bolck()
-    | if_stmt()
-    | while_stmt()
-    | dowhile_stmt()
-    | for_stmt()
-    | switch_stmt()
-    | continue_stmt()
-    | goto_stmt()
-    | return_stmt()
+    | LOOKAHEAD(2) n=labeled_stmt()
+    | e=expr() ";" { n = new ExprStmtNode(e.location(),e); }
+    | n=bolck()
+    | n=if_stmt()
+    | n=while_stmt()
+    | n=dowhile_stmt()
+    | n=for_stmt()
+    | n=switch_stmt()
+    | n=continue_stmt()
+    | n=goto_stmt()
+    | n=return_stmt()
     )
+        {
+            return n;
+        }
 }
 
 IfNode if_stmt():
@@ -434,20 +478,35 @@ WhileNode while_stmt():
     }
 }
 
-String for_stmt():{}
+ForNode for_stmt():
 {
-    <FOR> "(" [expr()] ";" [expr()] ";" [expr()] ")" stmt()
+    Token t;
+    ExprNode init,cond, incr;
+    StmtNode body;
+}
+{
+    t=<FOR> "(" [init=expr()] ";" [cond=expr()] ";" [incr=expr()] ")" body=stmt()
+        {
+            return new ForNode(location(t),init,cond,incr,body);
+        }
 }
 
-String break_stmt():{}
+String break_stmt():
 {
-    <BREAK> ";"
+    Token t;
+}
+{
+    t=<BREAK> ";" { return new BreakNode(location(t)); }
 }
 
-String return_stmt():{}
+ReturnNode return_stmt():
 {
-    LOOKAHEAD(2) <RETURN> ";"
-   | <RETURN> expr() ";"
+    Token t;
+    ExprNode expr;
+}
+{
+    LOOKAHEAD(2) t=<RETURN> ";" { return new ReturnNode(location(t),null);}
+   | <RETURN> expr=expr() ";"   { return new ReturnNode(location(t),expr);}
 }
 
 ExprNode expr():
