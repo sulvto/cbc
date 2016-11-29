@@ -173,14 +173,25 @@ Declarations import_stmts():
     }
 }
 
-String import_stmt():{}
+String import_stmt():
 {
-    <IMPORT> name()("." name())* ";"
+    StringBuilder bud = new StringBuilder();
+     String n;
+}
+{
+    <IMPORT> n=name() { bud.append(n); }
+    ("."     n=name() { bud.append(".");bud.append(n); })* ";"
+    {
+        return bud.toString();
+    }
 }
 
-String name():{}
+String name():
 {
-    <IDENTIFIER>
+    Token t;
+}
+{
+    t=<IDENTIFIER> { return t.image; }
 }
 
 Declarations top_defs():
@@ -233,9 +244,12 @@ List<DefinedVariable> defvars():
     }
 }
 
-String storage():{}
+boolean storage():
 {
-    [<STATIC>]
+    Token t = null;
+}
+{
+    [t=<STATIC>] { return t!=null; }
 }
 
 Constant defconst():
@@ -469,7 +483,7 @@ StmtNode stmt():
     (";"
     | LOOKAHEAD(2) n=labeled_stmt()
     | e=expr() ";" { n = new ExprStmtNode(e.location(),e); }
-    | n=bolck()
+    | n=block()
     | n=if_stmt()
     | n=while_stmt()
     | n=dowhile_stmt()
@@ -505,9 +519,22 @@ WhileNode while_stmt():
     StmeNode body;
 }
 {
-    t=<WHILE> "(" cond=stmt() ")" body=stmt()
+    t=<WHILE> "(" cond=expr() ")" body=stmt()
     {
         return new WhileNode(location(t),cond,body);
+    }
+}
+
+DoWhileNode dowhile_stmt():
+{
+    Token t;
+    StmtNode body;
+    ExprNode cond;
+}
+{
+    t=<DO> body=stmt() <WHILE>"(" cond=expr() ")" ";"
+    {
+       return new  DoWhileNode(location(t),body,cond);
     }
 }
 
@@ -524,7 +551,27 @@ ForNode for_stmt():
         }
 }
 
-String break_stmt():
+SwitchNode switch_stmt():
+{
+    Token t;
+    ExprNode cond;
+    List<StmtNode> cases;
+}
+{
+    t=<SWITCH> "(" cond=expr() ")" "{" cases=case_clauses() "}"
+    {
+        return new SwitchNode(location(t), cond, cases);
+    }
+}
+
+List<CaseNode> case_clauses():
+{
+    // TODO
+}
+{
+    <CASE> expr()":"
+}
+BreakNode break_stmt():
 {
     Token t;
 }
