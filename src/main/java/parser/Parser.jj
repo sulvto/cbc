@@ -267,20 +267,39 @@ DefinedFunction defun():
     }
 }
 
-Params params():{}
+Params params():
 {
-     LOOKAHEAD(<VOID> ")") <VOID>
-   | fixedparams() ["," "..."]
+    Token t;
+    Params params;
+}
+{
+     LOOKAHEAD(<VOID> ")") t=<VOID>   { return Params(location(t),new ArrayList()); }
+   | params=fixedparams() ["," "..." { params.acceptVarargs(); }]
+   {
+        return params;
+   }
 }
 
-String fixedparams():{}
+Params fixedparams():
 {
-    param() (LOOKAHEAD(2) "," param())*
+    List<Parameter> paramDescs = new ArrayList();
+    Parameter param,param1;
+}
+{
+    param1=param(){ paramDescs.add(param1); }
+    (LOOKAHEAD(2) "," param=param(){ paramDescs.add(param); })*
+    {
+        return new Params(param1.location(),paramDescs);
+    }
 }
 
-String param():{}
+Parameter param():
 {
-    type() name()
+    TypeNode type;
+     String name;
+}
+{
+    type=type() name=name() { return new Parameter(type,name); }
 }
 
 BlockNode block():
@@ -371,31 +390,45 @@ TypeNode type():
 TypeRef typeref():{
     Token t;
     TypeRef baseType;
+    TypeRef ref;
     ParamTypeRefs params;
 }
 {
     baseType=typeref_base()
-        ( LOOKAHEAD(2) "[" "]"              { return new ArrayTypeRef(baseType); }
-        | "[" t=<INTEGER> "]"               { return new ArrayTypeRef(baseType,intergerValue(t.image)); }
-        | "*"                               { return new PointerTypeRef(baseType); }
-        | "(" params=param_typerefs() ")"   { return new FunctionTypeRef(baseType,params); }
+        ( LOOKAHEAD(2) "[" "]"              { ref = new ArrayTypeRef(baseType); }
+        | "[" t=<INTEGER> "]"               { ref = new ArrayTypeRef(baseType,intergerValue(t.image)); }
+        | "*"                               { ref = new PointerTypeRef(baseType); }
+        | "(" params=param_typerefs() ")"   { ref = new FunctionTypeRef(baseType,params); }
         )*
+        {
+            return ref;
+        }
 }
 
-TypeRef typeref_base():{}
+TypeRef typeref_base():
 {
-     <VOID>
-   | <CHAR>
-   | <SHORT>
-   | <INT>
-   | <LONG>
-   | LOOKAHEAD(2) <UNSIGNED> <CHAR>
-   | LOOKAHEAD(2) <UNSIGNED> <SHORT>
-   | LOOKAHEAD(2) <UNSIGNED> <INT>
-   | <UNSIGNED> <LONG>
-   | <STRUCT> <IDENTIFIER>
-   | <UNION> <IDENTIFIER>
-   | LOOKAHEAD({isType(getToken(1).image)})<IDENTIFIER>
+    Token t,name;
+}
+{
+     t=<VOID>  { return new VoidType(location(t)); }
+   | t=<CHAR>  { return IntegerTypeRef.charRef(location(t)); }
+   | t=<SHORT> { return IntegerTypeRef.shortRef(location(t)); }
+   | t=<INT>   { return IntegerTypeRef.intRef(location(t)); }
+   | t=<LONG>  { return IntegerTypeRef.longRef(location(t)); }
+   | LOOKAHEAD(2) t=<UNSIGNED> <CHAR>
+        { return IntegerTypeRef.ucharRef(location(t)); }
+   | LOOKAHEAD(2) t=<UNSIGNED> <SHORT>
+        { return IntegerTypeRef.ushortRef(location(t)); }
+   | LOOKAHEAD(2) t=<UNSIGNED> <INT>
+        { return IntegerTypeRef.uintRef(location(t)); }
+   | t=<UNSIGNED> <LONG>
+        { return IntegerTypeRef.ulongRef(location(t)); }
+   | t=<STRUCT> name=<IDENTIFIER>
+        { return new StructTypeRef(location(t),name.image); }
+   | t=<UNION>  name=<IDENTIFIER>
+        { return new UnionTypeRef(location(t),name.image); }
+   | LOOKAHEAD({isType(getToken(1).image)}) name=<IDENTIFIER>
+        { return new UserTypeRef(location(t),name.image);}
 }
 
 ParamTypeRefs param_typerefs():
@@ -503,10 +536,14 @@ ReturnNode return_stmt():
 {
     Token t;
     ExprNode expr;
+    ReturnNode rn;
 }
 {
-    LOOKAHEAD(2) t=<RETURN> ";" { return new ReturnNode(location(t),null);}
-   | <RETURN> expr=expr() ";"   { return new ReturnNode(location(t),expr);}
+    LOOKAHEAD(2) t=<RETURN> ";" { rn= new ReturnNode(location(t),null);}
+   | <RETURN> expr=expr() ";"   { rn=  new ReturnNode(location(t),expr);}
+   {
+        return rn;
+   }
 }
 
 ExprNode expr():
@@ -583,35 +620,62 @@ ExprNode expr7():
     ExprNode l,r;
 }
 {
-    expr6()( ">" expr6()
-            | "<" expr6()
-            | ">=" expr6()
-            | "<=" expr6()
-            | "==" expr6()
-            | "!=" expr6()
+    l=expr6()( ">" r=expr6() { l= new BinaryOpNode(l,">",r); }
+            | "<"  r=expr6() { l= new BinaryOpNode(l,"<",r); }
+            | ">=" r=expr6() { l= new BinaryOpNode(l,">=",r); }
+            | "<=" r=expr6() { l= new BinaryOpNode(l,"<=",r); }
+            | "==" r=expr6() { l= new BinaryOpNode(l,"==",r); }
+            | "!=" r=expr6() { l= new BinaryOpNode(l,"!=",r); }
             )*
+            {
+              return l;
+            }
 }
 
-ExprNode expr6():{}
+ExprNode expr6():
 {
-    expr5()("||" expr5())
+    ExprNode l,r;
+}
+{
+    l=expr5()("||" r=expr5() { l= new BinaryOpNode(l,"||",r); })
+    {
+        return l;
+    }
 }
 
-ExprNode expr5():{}
+ExprNode expr5():
 {
-    expr4()("^" expr4())
+    ExprNode l,r;
+}
+{
+    l=expr4()("^" r=expr4() { l= new BinaryOpNode(l,"^",r); })
+    {
+        return l;
+    }
 }
 
-ExprNode expr4():{}
+ExprNode expr4():
 {
-    expr3()("&" expr3())
+    ExprNode l,r;
+}
+{
+    l=expr3()("&" r=expr3() { l= new BinaryOpNode(l,"&",r); })
+    {
+        return l;
+    }
 }
 
-ExprNode expr3():{}
+ExprNode expr3():
 {
-    expr2()(  "<<" expr2()
-            | ">>" expr2()
-            )*
+    ExprNode l,r;
+}
+{
+    l=expr2()(  "<<" r=expr2() { l= new BinaryOpNode(l,"<<",r); }
+              | ">>" r=expr2() { l= new BinaryOpNode(l,">>",r); }
+             )*
+             {
+                return l;
+             }
 }
 
 ExprNode expr2():
@@ -649,7 +713,7 @@ ExprNode term():
 {
      LOOKAHEAD("(" type())
       "(" t = type() ")" n = term(){ return new CastNode(t,n);}
-   | unary()                       { return n;}
+   | n=unary()                     { return n;}
 }
 
 ExprNode unary():
@@ -696,9 +760,16 @@ ExprNode postfix():
     }
 }
 
-String args():{}
+List<ExprNode> args():
 {
-    [expr() ("," expr())* ]
+    List<ExprNode> args = new ArrayList();
+    ExprNode expr,expr1;
+}
+{
+    [expr1=expr(){ args.add(expr1); } ("," expr=expr(){ args.add(expr); })* ]
+    {
+        return args;
+    }
 }
 
 ExprNode primary():
