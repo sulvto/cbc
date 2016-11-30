@@ -6,12 +6,46 @@ options {
 }
 
 PARSER_BEGIN(Parser)
+package parser;
+import ast.*;
+import entity.*;
+import type.*;
+import asm.*;
+import utils.*;
+import exception.*;
+import java.util.*;
+import java.io.*;
 
 class Parser {
+    public final static String SOURCE_ENCODING = "UTF-8";
+
+    public static AST parseFile(File file,LibraryLoader loader,ErrorHandler errorHandler) throws SytaxException ,FileException {
+        return parseFile(file,loader,errorHandler,false);
+    }
+
+    public static AST parseFile(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws SytaxException ,FileException {
+        return newFileParse(file,loader,errorHandler,debug).parse();
+    }
+
+    public static Parser newFileParse(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws FileException {
+            try{
+                BufferedReader r = new BufferedReader(new InputStreanReader(new FileInputStream(file),SOURCE_ENCODING));
+                 return new Parse(r,file.getPath(),loader,errorHandler,debug);
+            } catch(FileNotFoundException ex){
+                throw new FileException(ex.getMessage());
+            }catch (UnsupportedEncodingException ex){
+                throw new Error("UTF-8 is not supported??: "+ex.getMessage());
+            }
+        }
+
     private String sourceName;
     private LibraryLoader loader;
     private ErrorHandler errorHandler;
     private Set<String> knownTypedefs;
+
+    public Parser(Reader s,String name,LibraryLoader loader,ErrorHandler errorHandler){
+        this(s,name,loader,errorHandler,false);
+    }
 
     public Parser(Reader s,String name,LibraryLoader loader,ErrorHandler errorHandler,boolean debug){
         this(s);
@@ -38,22 +72,69 @@ class Parser {
         }
     }
 
-    public static AST parseFile(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws SytaxException ,FileException {
-        return newFileParse(file,loader,errorHandler,debug).parse();
+    public Declarations parseDecls() throws SyntaxException {
+        // TODO
     }
 
-    public final static String SOURCE_ENCODING = "UTF-8";
-
-    public static Parser newFileParse(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws FileException {
-        try{
-            BufferedReader r = new BufferedReader(new InputStreanReader(new FileInputStream(file),SOURCE_ENCODING));
-             return new Parse(r,file.getPath(),loader,errorHandler,debug);
-        } catch(FileNotFoundException ex){
-            throw new FileException(ex.getMessage());
-        }catch (UnsupportedEncodingException ex){
-            throw new Error("UTF-8 is not supported??: "+ex.getMessage());
+    private void addKnownTypedefs(List<TypedefNode> typedefs) {
+        for(TypedefNode n: typedefs) {
+            addType(n.getName());
         }
     }
+
+    private void addType(String name) {
+        knownTypedefs.add(name);
+    }
+
+    private void isType(String name) {
+        knownTypedefs.contains(name);
+    }
+
+    private IntegerLiteralNode integerNode(Location location,String image) {
+        long i  = integerValue(image);
+        if(image.endsWith("UL")) {
+            return new IntegerLiteralNode(location, IntegerTypeRef.ulongRef(), i);
+        } else if(image.endsWith("L")) {
+            return new IntegerLiteralNode(location, IntegerTypeRef.longRef(), i);
+        } else if(image.endsWith("U")) {
+            return new IntegerLiteralNode(location, IntegerTypeRef.uintRef(), i);
+        }else {
+            return new IntegerLiteralNode(location, IntegerTypeRef.intRef(), i);
+        }
+    }
+
+    private long integerValue(String image) {
+        String s = image.replaceFrist("[UL]+","");
+        if(s.startsWith("0x")||s.startsWith("0X")) {
+            return Long.parseLong(s.substring(2),16);
+        } else if(s.startsWith("0")&&!"0".equals(s)) {
+            return Long.parseLong(s.substring(1),8);
+        } else {
+            return Long.parseLong(s,10);
+        }
+    }
+
+    private long characterCode(String image) {
+       String s  = stringValue(image);
+       if(s.length()!=1) {
+            throw new Error("must not happen: character length > 1 ");
+       }
+        return (long) s.chatAt(0);
+    }
+
+    private String stringValue(String _image) throws ParseException {
+        int pos = 0;
+        // TODO
+    }
+
+    private TypeRef size_t() {
+        return IntegerTypeRef.ulongRef();
+    }
+
+    protected Location location(Token t) {
+        return new Location(sourceName,t);
+    }
+
 }
 
 PARSER_END(Parser)
@@ -410,7 +491,7 @@ TypeRef typeref():{
 {
     baseType=typeref_base()
         ( LOOKAHEAD(2) "[" "]"              { ref = new ArrayTypeRef(baseType); }
-        | "[" t=<INTEGER> "]"               { ref = new ArrayTypeRef(baseType,intergerValue(t.image)); }
+        | "[" t=<INTEGER> "]"               { ref = new ArrayTypeRef(baseType,integerValue(t.image)); }
         | "*"                               { ref = new PointerTypeRef(baseType); }
         | "(" params=param_typerefs() ")"   { ref = new FunctionTypeRef(baseType,params); }
         )*
@@ -489,6 +570,7 @@ StmtNode stmt():
     | n=dowhile_stmt()
     | n=for_stmt()
     | n=switch_stmt()
+    | n=break_stmt()
     | n=continue_stmt()
     | n=goto_stmt()
     | n=return_stmt()
@@ -566,17 +648,94 @@ SwitchNode switch_stmt():
 
 List<CaseNode> case_clauses():
 {
-    // TODO
+    List<CaseNode> clauses = new ArrayList();
+    CaseNode n;
 }
 {
-    <CASE> expr()":"
+    (n=case_clause() { clauses.add(n); } )*
+    [n=default_clause() { clauses.add(n); } ]
+    {
+        return clauses;
+    }
 }
+
+CaseNode case_clause():
+{
+    List<ExprNode> values ;
+    BlockNode body;
+}
+{
+    values=cases() body=case_body()
+    {
+        return new CaseNode(body.location(),values,body);
+    }
+}
+
+List<ExprNode> cases():
+{
+    List<ExprNode> values = new ArrayList();
+    ExprNode n;
+}
+{
+    (<CASE> n=primary() ":" { values.add(n); })+
+    {
+        return values;
+    }
+}
+
+BlockNode case_body():
+{
+    LinkedList<StmtNode> stmts = new LinkedList();
+    StmtNode stmt;
+}
+{
+    (s=stmt() { if(s!=null) stmts.add(stmt); })+
+    {
+        // last stmt of case clause must be break stmt.
+        if (!stmts.getLast() instanceof BreakNode) {
+            throw new ParseException("missing break statement at the last of case clause");
+        } else {
+            return new BlockNode(stmts.get(0).location(),new ArrayList(),stmts);
+        }
+    }
+}
+
+CaseNode default_clause():
+{
+    BlockNode body;
+}
+{
+    <DEFAULT_>":" body = case_body()
+    {
+        return new CaseNode(body.location(),new ArrayList(),body);
+    }
+}
+
+ContinueNode continue_stmt():
+{
+    Token t;
+}
+{
+    t=<CONTINUE> ";" { return ContinueNode(location(t)); }
+}
+
 BreakNode break_stmt():
 {
     Token t;
 }
 {
     t=<BREAK> ";" { return new BreakNode(location(t)); }
+}
+
+GotoNode goto_stmt():
+{
+    Token t,name;
+}
+{
+    t=<GOTO> name=<IDENTIFIER> ";"
+    {
+        return new GotoNode(location(t),name.image);
+    }
 }
 
 ReturnNode return_stmt():
@@ -779,11 +938,11 @@ ExprNode unary():
    | "&"  n=term()  { return new AddressNode(n);}
    | LOOKAHEAD(3) <SIZEOF> "(" y=type() ")"
      {
-           return new SizeofTypeNode(t,sizr_t());
+           return new SizeofTypeNode(t,size_t());
      }
    | <SIZEOF> n=unary()
      {
-         return new SizeofExprNode(n,sizr_t());
+         return new SizeofExprNode(n,size_t());
      }
    | n=postfix() { return n; }
 }
