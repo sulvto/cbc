@@ -4,7 +4,7 @@ package ast;
  * &&
  * Created by sulvto on 16-11-15.
  */
-public class LogicalAndNode  extends BinaryOpNode{
+public class LogicalAndNode extends BinaryOpNode {
     ExprNode left, right;
 
     @Override
@@ -17,7 +17,7 @@ public class LogicalAndNode  extends BinaryOpNode{
         return left;
     }
 
-    public LogicalAndNode(ExprNode left, String op, ExprNode right) {
-        super(left, op, right);
+    public LogicalAndNode(ExprNode left, ExprNode right) {
+        super(left, "&&", right);
     }
 }

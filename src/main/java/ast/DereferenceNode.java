@@ -9,6 +9,10 @@ import type.Type;
 public class DereferenceNode  extends LHSNode{
     ExprNode expr;
 
+    public DereferenceNode(ExprNode expr) {
+        this.expr = expr;
+    }
+
     public ExprNode getExpr() {
         return expr;
     }

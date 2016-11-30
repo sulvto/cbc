@@ -70,7 +70,7 @@ public class Declarations {
         return new ArrayList<>(defuns);
     }
 
-    public void addFuncdecls(UndefinedFunction function) {
+    public void addFuncdecl(UndefinedFunction function) {
         funcdecls.add(function);
     }
 
@@ -79,7 +79,7 @@ public class Declarations {
     }
 
 
-    public void addDefstructs(StructNode structNode) {
+    public void addDefstruct(StructNode structNode) {
         defstructs.add(structNode);
     }
 
@@ -95,7 +95,7 @@ public class Declarations {
         return new ArrayList<>(defunions);
     }
 
-    public void addTypedefs(TypedefNode typedefNode) {
+    public void addTypedef(TypedefNode typedefNode) {
         typedefs.add(typedefNode);
     }
 

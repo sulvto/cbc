@@ -22,7 +22,7 @@ public class Params extends ParamSlots<Parameter> implements Dumpable {
         return paramDescriptors;
     }
 
-    public ParamTypeRefs ParametersTypeRef() {
+    public ParamTypeRefs parametersTypeRef() {
         List<TypeRef> typeRefs = new ArrayList<>();
         for (Parameter parameter : paramDescriptors) {
             typeRefs.add(parameter.getTypeNode().getTypeRef());

@@ -2,9 +2,9 @@ package ir;
 
 import ast.ConstanTable;
 import ast.Location;
-import ast.ToplevelScope;
 import entity.DefinedFunction;
 import entity.DefinedVariable;
+import entity.ToplevelScope;
 import entity.UndefinedFunction;
 
 import java.util.List;

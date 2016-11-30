@@ -1,5 +1,7 @@
 package ast;
 
+import parser.Token;
+
 /**
  * Created by sulvto on 16-11-14.
  */

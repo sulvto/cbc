@@ -9,15 +9,15 @@ import java.util.List;
  */
 public class SwitchNode extends StmtNode {
     protected ExprNode cond;
-    protected List<StmtNode> cases;
+    protected List<CaseNode> cases;
 
-    public SwitchNode(Location location, ExprNode cond, List<StmtNode> cases) {
+    public SwitchNode(Location location, ExprNode cond, List<CaseNode> cases) {
         super(location);
         this.cond = cond;
         this.cases = cases;
     }
 
-    public List<StmtNode> getCases() {
+    public List<CaseNode> getCases() {
         return cases;
     }
 

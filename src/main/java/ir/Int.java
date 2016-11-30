@@ -1,5 +1,8 @@
 package ir;
 
+import asm.ImmediateValue;
+import asm.IntegerLiteral;
+import asm.MemoryReference;
 import ast.Dumper;
 import type.Type;
 

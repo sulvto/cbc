@@ -1,5 +1,7 @@
 package ast;
 
+import parser.Token;
+
 import java.util.Iterator;
 
 /**
