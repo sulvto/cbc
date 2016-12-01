@@ -76,7 +76,7 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
 
     @Override
     public Void visit(DefinedVariable variable) {
-        bindType(variable.typeNode());
+        bindType(variable.getTypeNode());
         if (variable.hasInitializer()) {
             visitExpr(variable.getInitializer());
         }
@@ -90,13 +90,13 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
 
     @Override
     public Void visit(UndefinedVariable variable) {
-        bindType(variable.typeNode());
+        bindType(variable.getTypeNode());
         return null;
     }
 
     @Override
     public Void visit(Constant constant) {
-        bindType(constant.typeNode());
+        bindType(constant.getTypeNode());
         visitExpr(constant.getValue());
         return null;
     }
@@ -104,15 +104,15 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
     @Override
     public Void visit(DefinedFunction definedFunction) {
         resolveFunctionHeader(definedFunction);
-        visitStmt(definedFunction.body());
+        visitStmt(definedFunction.getBody());
         return null;
     }
 
     private void resolveFunctionHeader(Function fun) {
-        bindType(fun.typeNode());
+        bindType(fun.getTypeNode());
         for (Parameter parameter : fun.parameters()) {
-            Type t = typeTable.getParamType(parameter.typeNode().getTypeRef());
-            parameter.typeNode().setType(t);
+            Type t = typeTable.getParamType(parameter.getTypeNode().getTypeRef());
+            parameter.getTypeNode().setType(t);
         }
     }
 
@@ -127,7 +127,7 @@ public class TypeResolver extends Visitor implements EntityVisitor<Void>, Declar
         for (DefinedVariable var : blockNode.getVariables()) {
             var.accept(this);
         }
-        visitStmts(blockNode.stmts());
+        visitStmts(blockNode.getStmts());
         return null;
     }
 

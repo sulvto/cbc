@@ -37,7 +37,7 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
                 visitExpr(variable.getInitializer());
             }
         }
-        visitStmts(blockNode.getStmtNodes());
+        visitStmts(blockNode.getStmts());
         return null;
     }
 

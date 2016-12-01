@@ -1,5 +1,6 @@
 package compiler;
 
+import parser.LibraryLoader;
 import type.TypeTable;
 import utils.ErrorHandler;
 

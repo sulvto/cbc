@@ -8,6 +8,7 @@ import exception.FileException;
 import exception.SemanticException;
 import exception.SyntaxException;
 import ir.IR;
+import parser.Parser;
 import type.TypeTable;
 import utils.ErrorHandler;
 
@@ -63,7 +64,7 @@ public class Compiler {
         link(opts);
     }
 
-    private void compile(String srcPath, String destPath, Options opts) throws SemanticException {
+    private void compile(String srcPath, String destPath, Options opts) throws SemanticException, SyntaxException, FileException {
         AST ast = parseFile(srcPath, opts);
         if (dumpAST(ast, opts.mode())) return;
         TypeTable types = opts.typeTable();
@@ -176,10 +177,10 @@ public class Compiler {
             errorHandler.error(ex.getMessage());
             return false;
         }
-        ;
+
     }
 
-    private AST parseFile(String path, Options opts) {
+    private AST parseFile(String path, Options opts) throws SyntaxException, FileException {
         return Parser.parseFile(new File(path), opts.getLoader(), errorHandler, opts.doesDebugParser());
     }
 

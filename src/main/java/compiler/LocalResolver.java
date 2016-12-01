@@ -44,7 +44,7 @@ public class LocalResolver extends Visitor {
     private void resolveFunctions(List<DefinedFunction> definedFunctions) {
         for (DefinedFunction function : definedFunctions) {
             pushScope(function.parameters());
-            resolve(function.body());
+            resolve(function.getBody());
             function.setScope(popScope());
         }
 

@@ -6,7 +6,6 @@ import exception.FileException;
 import exception.SemanticException;
 import utils.ErrorHandler;
 
-import javax.swing.text.html.parser.Parser;
 import java.io.File;
 import java.util.*;
 

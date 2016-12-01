@@ -1,5 +1,6 @@
 package ast;
 
+import type.ArrayType;
 import type.Type;
 
 /**
@@ -37,8 +38,8 @@ public class ArefNode extends LHSNode {
         return origType().allocSize();
     }
 
-    public Type length() {
-        return ((ArefNode) expr).origType().length();
+    public long length() {
+        return ((ArrayType) expr.origType()).length();
     }
 
     @Override

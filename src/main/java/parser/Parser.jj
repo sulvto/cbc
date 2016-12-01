@@ -16,7 +16,7 @@ import exception.*;
 import java.util.*;
 import java.io.*;
 
-class Parser {
+public class Parser {
     public final static String SOURCE_ENCODING = "UTF-8";
 
     public static AST parseFile(File file,LibraryLoader loader,ErrorHandler errorHandler) throws SyntaxException ,FileException {
@@ -26,6 +26,15 @@ class Parser {
     public static AST parseFile(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws SyntaxException ,FileException {
         return newFileParse(file,loader,errorHandler,debug).parse();
     }
+
+    public static Declarations parseDeclFile(File file,LibraryLoader loader,ErrorHandler errorHandler) throws SyntaxException ,FileException {
+            return parseDeclFile(file,loader,errorHandler,false);
+    }
+
+    public static Declarations parseDeclFile(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws SyntaxException ,FileException {
+            return newFileParse(file,loader,errorHandler,debug).parseDecls();
+    }
+
 
     public static Parser newFileParse(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws FileException {
             try{
@@ -164,23 +173,23 @@ class Parser {
     }
 
     private static final char bell = 7;
-    private static final char beckspace = 8;
+    private static final char backspace = 8;
     private static final char escape = 27;
     private static final char vt = 11;
 
     private char unescapeSeq(char c) throws ParseException {
         switch(c) {
-            case '0':return '\0';
-            case '"':return '\"';
-            case "\'":return '\'';
-            case 'a':return bell;
-            case 'b':return backspace;
-            case 'e':return escape;
-            case 'f':return '\f';
-            case 'n':return '\n';
-            case 'r':return '\r';
-            case 't':return '\t';
-            case 'v':return vt;
+            case '0': return '\0';
+            case '"': return '"';
+            case '\'': return '\'';
+            case 'a': return bell;
+            case 'b': return backspace;
+            case 'e': return escape;
+            case 'f': return '\f';
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case 't': return '\t';
+            case 'v': return vt;
             default:
             throw new ParseException("unknown escape sequence:\"\\"+c);
         }
