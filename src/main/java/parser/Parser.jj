@@ -634,7 +634,7 @@ List<StmtNode> stmts():
     StmtNode s;
 }
 {
-    (s=stmt(){ if(s!=null) ss.add(s);})*
+    (s=stmt() { if(s!=null) ss.add(s); })*
     {
         return ss;
     }

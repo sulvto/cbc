@@ -10,9 +10,14 @@ public class ForNode extends StmtNode {
 
     public ForNode(Location location, ExprNode init, ExprNode cond, ExprNode incr, StmtNode body) {
         super(location);
-        this.init = new ExprStmtNode(init.location(), init);
+        if (init!=null) {
+            this.init = new ExprStmtNode(init.location(), init);
+        }
         this.cond = cond;
-        this.incr = new ExprStmtNode(incr.location(), incr);
+        if (incr != null) {
+            this.incr = new ExprStmtNode(incr.location(), incr);
+        }
+        this.body = body;
     }
 
     public ExprNode getCond() {
