@@ -37,9 +37,9 @@ public class Parser {
 
 
     public static Parser newFileParse(File file,LibraryLoader loader,ErrorHandler errorHandler,boolean debug) throws FileException {
-            try{
+            try {
                 BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file),SOURCE_ENCODING));
-                 return new Parser(r,file.getPath(),loader,errorHandler,debug);
+                return new Parser(r,file.getPath(),loader,errorHandler,debug);
             } catch(FileNotFoundException ex){
                 throw new FileException(ex.getMessage());
             }catch (UnsupportedEncodingException ex){
@@ -238,7 +238,7 @@ TOKEN : {
 
 // 标识符
 TOKEN : {
-    <IDENTIFIER : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","_","0"-"9"])>
+    <IDENTIFIER : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","_","0"-"9"])*>
 }
 
 // 数值
@@ -350,7 +350,7 @@ Declarations top_defs():
     TypedefNode typedef;
 }
 {
-    (LOOKAHEAD(storage() typeref() <IDENTIFIER> ")")
+    (LOOKAHEAD(storage() typeref() <IDENTIFIER> "(")
       defun=defun()        { decls.addDefun(defun); }
     | LOOKAHEAD(3)
       defvars=defvars()    { decls.addDefvars(defvars); }
@@ -518,7 +518,7 @@ List<Slot> member_list():
     Slot slot;
 }
 {
-    "{" (slot=slot() ";" {memberList.add(s);})* "}"
+    "{" (slot=slot() ";" {memberList.add(slot); })* "}"
         {
             return memberList;
         }
@@ -595,7 +595,7 @@ TypeRef typeref_base():
    | t=<UNION>  name=<IDENTIFIER>
         { return new UnionTypeRef(location(t),name.image); }
    | LOOKAHEAD({isType(getToken(1).image)}) name=<IDENTIFIER>
-        { return new UserTypeRef(location(t),name.image);}
+        { return new UserTypeRef(location(name),name.image);}
 }
 
 ParamTypeRefs param_typerefs():
@@ -628,7 +628,7 @@ ParamTypeRefs fixedparam_typerefs():
         }
 }
 
-List<StmtNode> stmts ():
+List<StmtNode> stmts():
 {
     List<StmtNode> ss = new ArrayList<StmtNode>();
     StmtNode s;
@@ -839,14 +839,10 @@ ReturnNode return_stmt():
 {
     Token t;
     ExprNode expr;
-    ReturnNode rn;
 }
 {
-    LOOKAHEAD(2) t=<RETURN> ";" { rn= new ReturnNode(location(t),null);}
-   | <RETURN> expr=expr() ";"   { rn=  new ReturnNode(location(t),expr);}
-   {
-        return rn;
-   }
+    LOOKAHEAD(2) t=<RETURN> ";" { return new ReturnNode(location(t),null);}
+    | t=<RETURN> expr=expr() ";"   { return new ReturnNode(location(t),expr);}
 }
 
 ExprNode expr():
@@ -940,7 +936,7 @@ ExprNode expr6():
     ExprNode l,r;
 }
 {
-    l=expr5()("||" r=expr5() { l= new BinaryOpNode(l,"||",r); })
+    l=expr5()("|" r=expr5() { l= new BinaryOpNode(l,"|",r); })*
     {
         return l;
     }
@@ -951,7 +947,7 @@ ExprNode expr5():
     ExprNode l,r;
 }
 {
-    l=expr4()("^" r=expr4() { l= new BinaryOpNode(l,"^",r); })
+    l=expr4()("^" r=expr4() { l= new BinaryOpNode(l,"^",r); })*
     {
         return l;
     }
@@ -962,7 +958,7 @@ ExprNode expr4():
     ExprNode l,r;
 }
 {
-    l=expr3()("&" r=expr3() { l= new BinaryOpNode(l,"&",r); })
+    l=expr3()("&" r=expr3() { l= new BinaryOpNode(l,"&",r); })*
     {
         return l;
     }
@@ -1097,7 +1093,7 @@ ExprNode primary():
      {
         return new VariableNode(location(t),t.image);
      }
-   | "(" expr() ")"
+   | "(" n=expr() ")"
     {
         return n;
     }

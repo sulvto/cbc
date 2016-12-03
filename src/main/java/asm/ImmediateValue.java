@@ -8,7 +8,7 @@ public class ImmediateValue extends Operand {
     private Literal expr;
 
     public ImmediateValue(long n) {
-        this(new IntegerLiteral(n));
+//        this(new IntegerLiteral(n));
     }
     public ImmediateValue(Literal expr) {
         this.expr = expr;
@@ -16,5 +16,20 @@ public class ImmediateValue extends Operand {
 
     public Literal getExpr() {
         return expr;
+    }
+
+    @Override
+    public String toSource(SymbolTable table) {
+        return null;
+    }
+
+    @Override
+    public String dump() {
+        return null;
+    }
+
+    @Override
+    public void collectStatistics(Statistics stats) {
+
     }
 }

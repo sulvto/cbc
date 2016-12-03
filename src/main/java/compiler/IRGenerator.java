@@ -1,18 +1,18 @@
 package compiler;
 
+import asm.Label;
 import ast.*;
 import entity.DefinedFunction;
 import entity.DefinedVariable;
 import entity.LocalScope;
+import exception.JumpError;
 import exception.SemanticException;
 import ir.*;
 import type.Type;
 import type.TypeTable;
 import utils.ErrorHandler;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,16 +47,16 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     LinkedList<LocalScope> scopeStack;
     LinkedList<Label> breakStack;
     LinkedList<Label> continueStack;
-    Map<String, JumpEntry> jumpMap;
+//    Map<String, JumpEntry> jumpMap;
 
     private List<Stmt> compileFunctionBody(DefinedFunction fun) {
         stmts = new ArrayList<>();
         scopeStack = new LinkedList<>();
         breakStack = new LinkedList<>();
         continueStack = new LinkedList<>();
-        jumpMap = new HashMap<>();
+//        jumpMap = new HashMap<>();
         transformStmt(fun.getBody());
-        checkJumpLinks(jumpMap);
+//        checkJumpLinks(jumpMap);
         return stmts;
     }
 
@@ -112,7 +112,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         if (breakStack.isEmpty()) {
             throw new JumpError("break from out of loop");
         }
-        breakStack.getLast();
+        return breakStack.getLast();
     }
 
     private void popContinue() {
@@ -243,7 +243,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         try {
             jump(node.location(), currentBreakTarget());
         } catch (JumpError error) {
-            error(node, error.getMessage());
+//            error(node, error.getMessage());
         }
         return null;
     }
@@ -253,7 +253,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         try {
             jump(node.location(), currentContinueTarget());
         } catch (JumpError error) {
-            error(node, error.getMessage());
+//            error(node, error.getMessage());
         }
         return null;
     }
@@ -327,7 +327,8 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     }
 
     private Type ptrdiff_t() {
-        return Type.get(typeTable.getLongSize());
+        return null;
+//        return Type.get(typeTable.getLongSize());
     }
 
     private boolean isPointerArithmetic(Op op, Type operandType) {
@@ -353,9 +354,11 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     }
 
     private Type asmType(Type type) {
-        if (type.isVoid()) return int_t();
-        return Type.get(type.size());
+//        if (type.isVoid()) return int_t();
+//        return Type.get(type.size());
+        return null;
     }
+
 
     @Override
     public Expr visit(PrefixOpNode node) {

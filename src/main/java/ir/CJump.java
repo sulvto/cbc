@@ -1,9 +1,7 @@
 package ir;
 
-import ast.Dumper;
+import asm.Label;
 import ast.Location;
-
-import java.awt.*;
 
 /**
  * Created by sulvto on 16-11-20.
@@ -35,8 +33,8 @@ public class CJump extends Stmt {
     @Override
     protected void doDump(Dumper d) {
         d.printMember("cond", cond);
-        d.printMember("thenLabel", thenLabel);
-        d.printMember("elseLabel", elseLabel);
+//        d.printMember("thenLabel", thenLabel);
+//        d.printMember("elseLabel", elseLabel);
     }
 
     @Override

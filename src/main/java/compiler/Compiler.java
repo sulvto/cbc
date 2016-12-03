@@ -67,11 +67,11 @@ public class Compiler {
     private void compile(String srcPath, String destPath, Options opts) throws SemanticException, SyntaxException, FileException {
         AST ast = parseFile(srcPath, opts);
         if (dumpAST(ast, opts.mode())) return;
-        TypeTable types = opts.typeTable();
-        AST sem = semanticAnalyze(ast, types, opts);
-        if (dumpSemant(ast, opts.mode())) return;
-        IR ir = new IRGenerator(types, errorHandler).generate(sem);
-        if (dumpIR(ir, opts.mode())) return;
+//        TypeTable types = opts.typeTable();
+//        AST sem = semanticAnalyze(ast, types, opts);
+//        if (dumpSemant(ast, opts.mode())) return;
+//        IR ir = new IRGenerator(types, errorHandler).generate(sem);
+//        if (dumpIR(ir, opts.mode())) return;
         // TODO
 //        AssemblyCode asm = generateAssembly(ir, opts);
 //        if (dumpAsm(asm, opts.mode())) return;
@@ -151,7 +151,8 @@ public class Compiler {
     }
 
     private void assemble(String srcPath, String destPath, Options opts) {
-        opts.assembler(errorHandler).assemble(srcPath, destPath, opts.asOptions());
+        // TODO
+//        opts.assembler(errorHandler).assemble(srcPath, destPath, opts.asOptions());
     }
 
     private boolean checkSyntax(Options opts) {

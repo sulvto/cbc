@@ -1,9 +1,7 @@
 package ir;
 
-import ast.Dumper;
+import asm.Label;
 import ast.Location;
-
-import java.awt.*;
 
 /**
  * Created by sulvto on 16-11-20.

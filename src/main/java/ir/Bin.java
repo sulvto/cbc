@@ -1,6 +1,5 @@
 package ir;
 
-import ast.Dumper;
 import type.Type;
 
 /**

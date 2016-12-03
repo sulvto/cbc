@@ -5,6 +5,6 @@ package asm;
  */
 public abstract class MemoryReference extends Operand implements Comparable<MemoryReference> {
     public boolean isMemoryReference() {
-
+        return false;
     }
 }

@@ -134,10 +134,10 @@ public class AST extends Node {
     public StmtNode getSingleMainStmt() {
         for (DefinedFunction f : definedFunctions()) {
             if ("main".equals(f.getName())) {
-                if (f.body().getStmts().isEmpty()) {
+                if (f.getBody().getStmts().isEmpty()) {
                     return null;
                 }
-                return f.body().getStmts().get(0);
+                return f.getBody().getStmts().get(0);
             }
         }
         return null;

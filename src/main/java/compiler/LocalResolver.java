@@ -1,8 +1,6 @@
 package compiler;
 
-import ast.AST;
-import ast.BlockNode;
-import ast.VariableNode;
+import ast.*;
 import entity.*;
 import exception.SemanticException;
 import utils.ErrorHandler;
@@ -24,7 +22,15 @@ public class LocalResolver extends Visitor {
         this.scopesStack = new LinkedList<>();
     }
 
-    public void resolve(AST ast) {
+    private void resolve(StmtNode stmtNode) {
+        stmtNode.accept(this);
+    }
+
+    private void resolve(ExprNode exprNode) {
+        exprNode.accept(this);
+    }
+
+    public void resolve(AST ast) throws SemanticException {
         ToplevelScope toplevel = new ToplevelScope();
         scopesStack.add(toplevel );
         for (Entity decl: ast.declarations()) {
@@ -34,8 +40,8 @@ public class LocalResolver extends Visitor {
             toplevel.defineEntity(ent);
         }
 
-        resolveGvarInitializers(ast.definedVariables());
-        resolveConstantValues(ast.getConstants());
+//        resolveGvarInitializers(ast.definedVariables());
+//        resolveConstantValues(ast.getConstants());
         resolveFunctions(ast.definedFunctions());
 
 
@@ -58,7 +64,7 @@ public class LocalResolver extends Visitor {
         LocalScope scope = new LocalScope(currentScope());
         for (DefinedVariable variable : definedVariables) {
             if (scope.isDefinedLocally(variable.getName())) {
-                error(variable.location(), "duplicated variable in scope" + variable.getName());
+//                error(variable.location(), "duplicated variable in scope" + variable.getName());
             }else{
                 scope.defineVariable(variable);
             }
@@ -85,7 +91,7 @@ public class LocalResolver extends Visitor {
             entity.refered();
             node.setEntity(entity);
         } catch (SemanticException e) {
-            error(node, e.getMessage());
+//            error(node, e.getMessage());
         }
         return null;
     }

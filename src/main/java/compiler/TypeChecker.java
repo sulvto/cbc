@@ -41,12 +41,12 @@ public class TypeChecker extends Visitor {
         if (isInvalidVariableType(var.getType())) {
             error(var.location(), "invalid variable type");
         } else if (var.hasInitializer()) {
-            if (isInvalidLHSType(var.getType())) {
-                error(var.location(), "invalid LHS type: " + var.getType());
-            } else {
-                check(var.getInitializer());
-                var.setInitializer(implicitCast(var.getType(), var.getInitializer()));
-            }
+//            if (isInvalidLHSType(var.getType())) {
+//                error(var.location(), "invalid LHS type: " + var.getType());
+//            } else {
+//                check(var.getInitializer());
+//                var.setInitializer(implicitCast(var.getType(), var.getInitializer()));
+//            }
         }
     }
 
@@ -87,9 +87,9 @@ public class TypeChecker extends Visitor {
     @Override
     public Void visit(ExprStmtNode node) {
         check(node.getExpr());
-        if (isInvalidStatementType(node.getExpr().getType())) {
-            error(node.location(), "invalid statement type: " + node.getExpr().getType());
-        }
+//        if (isInvalidStatementType(node.getExpr().getType())) {
+//            error(node.location(), "invalid statement type: " + node.getExpr().getType());
+//        }
         return null;
     }
 
@@ -108,7 +108,7 @@ public class TypeChecker extends Visitor {
     }
 
     private void checkCond(ExprNode cond) {
-        mustBeScalar(cond, "condition expression");
+//        mustBeScalar(cond, "condition expression");
     }
 
     @Override
@@ -191,16 +191,16 @@ public class TypeChecker extends Visitor {
     }
 
     private void arithmeticImplicitCast(BinaryOpNode node) {
-        Type l = integralPromotion(node.getLeft().getType());
-        Type r = integralPromotion(node.getRight().getType());
-        Type target = usualArithmeticConversion(l, r);
-        if (!l.isSameType(target)) {
-            node.setLeft(new CastNode(target, node.getLeft()));
-        }
-        if (!r.isSameType(target)) {
-            node.setRight(new CastNode(target, node.getRight()));
-        }
-        node.setType(target);
+//        Type l = integralPromotion(node.getLeft().getType());
+//        Type r = integralPromotion(node.getRight().getType());
+//        Type target = usualArithmeticConversion(l, r);
+//        if (!l.isSameType(target)) {
+//            node.setLeft(new CastNode(target, node.getLeft()));
+//        }
+//        if (!r.isSameType(target)) {
+//            node.setRight(new CastNode(target, node.getRight()));
+//        }
+//        node.setType(target);
     }
 
     private Type usualArithmeticConversion(Type l, Type r) {

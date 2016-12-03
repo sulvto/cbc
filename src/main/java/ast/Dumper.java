@@ -26,7 +26,7 @@ public class Dumper {
 
     public void printNodeList(String name, List<? extends Dumpable> nodes) {
         printIndent();
-        stream.print(name + ":");
+        stream.println(name + ":");
         indent();
         for (Dumpable n : nodes) {
             n.dump(this);

@@ -5,6 +5,17 @@ package ir;
  */
 public class Uni extends Expr {
     public Uni(Object asmType, Object internUnary, Expr expr) {
-        super();
+        // NUll
+        super(null);
+    }
+
+    @Override
+    protected void doDump(Dumper d) {
+
+    }
+
+    @Override
+    public <S, E> E accept(IRVisitor<S, E> visitor) {
+        return null;
     }
 }

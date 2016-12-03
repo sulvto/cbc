@@ -6,7 +6,7 @@ import java.io.File;
  * Created by sulvto on 16-11-23.
  */
 public class SourceFile implements LdArg {
-    static final String EXT_CFLAT_SOURCE = ".cb";
+    static final String EXT_CFLAT_SOURCE = ".c";
     static final String EXT_ASSEMBLY_SOURCE = ".s";
     static final String EXT_OBJECT_FILE = ".o";
     static final String EXT_STATIC_LIBRARY = ".a";

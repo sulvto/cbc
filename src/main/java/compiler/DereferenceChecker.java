@@ -84,9 +84,9 @@ public class DereferenceChecker extends Visitor {
         super.visit(node);
 
         if (!node.getExpr().isPointer()) {
-            undereferableError(node.location());
+//            undereferableError(node.location());
         }
-        handleImplicitAddress(node);
+//        handleImplicitAddress(node);
         return null;
     }
 
@@ -95,7 +95,7 @@ public class DereferenceChecker extends Visitor {
 
         super.visit(node);
         if (!node.getExpr().isLvalue()) {
-            semanticError(node.location(), "invalid expression for &");
+//            semanticError(node.location(), "invalid expression for &");
         }
         Type base = node.getExpr().getType();
         if (!node.getExpr().isLoadable()) {

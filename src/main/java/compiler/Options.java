@@ -1,8 +1,6 @@
 package compiler;
 
 import parser.LibraryLoader;
-import type.TypeTable;
-import utils.ErrorHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,9 +19,9 @@ public class Options {
 
     private CompilerMode mode;
 
-    private Platform platform = new X86Linux();
-    private AssemblerOptions asOptions = new AssemblerOptions();
-    private LinkerOptions ldOptions= new LinkerOptions();
+//    private Platform platform = new X86Linux();
+//    private AssemblerOptions asOptions = new AssemblerOptions();
+//    private LinkerOptions ldOptions= new LinkerOptions();
     private String outputFileName;
     private List<LdArg> ldArgs;
     private List<SourceFile> sourceFiles;
@@ -31,6 +29,8 @@ public class Options {
     private boolean debugParser = false;
 
     private void parseArgs(String[] args) {
+        sourceFiles = new ArrayList<>();
+        ldArgs = new ArrayList<>();
         ListIterator<String> argIterator = Arrays.asList(args).listIterator();
         while (argIterator.hasNext()) {
             String arg = argIterator.next();
@@ -150,15 +150,15 @@ public class Options {
 
     }
 
-    public TypeTable typeTable() {
-        return platform.typeTable();
-    }
-
-    public Assembler assembler(ErrorHandler errorHandler) {
-        return platform.assembler(errorHandler);
-    }
-
-    AssemblerOptions asOptions() {
-        return asOptions;
-    }
+//    public TypeTable typeTable() {
+//        return platform.typeTable();
+//    }
+//
+//    public Assembler assembler(ErrorHandler errorHandler) {
+//        return platform.assembler(errorHandler);
+//    }
+//
+//    AssemblerOptions asOptions() {
+//        return asOptions;
+//    }
 }
