@@ -19,11 +19,22 @@ public class CompilerTest {
 
     @Test
     public void dumpAst() throws Exception {
-
         String[] args = {"--dump-ast", getResourcePath("hello.c")};
+        Compiler.main(args);
+        // looks ok
+    }
+
+    @Test
+    public void dumpReference() throws Exception {
+        String[] args = {"--dump-reference", getResourcePath("hello.c")};
         Compiler.main(args);
     }
 
+    @Test
+    public void dumpIR() throws Exception {
+        String[] args = {"--dump-ir", getResourcePath("hello.c")};
+        Compiler.main(args);
+    }
 
     @Test
     public void commandMain() throws Exception {

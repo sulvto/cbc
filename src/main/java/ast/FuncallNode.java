@@ -29,7 +29,9 @@ public class FuncallNode extends ExprNode {
     }
 
     public FunctionType getFunctionType() {
-        return expr.getType().getPointerType().getBaseType().getFunctionType();
+        // TODO
+        // return expr.getType().getPointerType().getBaseType().getFunctionType();
+        return expr.getType().getFunctionType();
     }
 
     @Override

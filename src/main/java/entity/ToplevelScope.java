@@ -1,6 +1,7 @@
 package entity;
 
 import exception.SemanticException;
+import utils.ErrorHandler;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,5 +58,19 @@ public class ToplevelScope extends Scope {
             throw new SemanticException("duplicated definition: " + entity.getName() + ": " + e.location() + " and " + entity.location());
         }
         entityMap.put(entity.getName(), entity);
+    }
+
+    public void checkReferences(ErrorHandler errorHandler) {
+        for (Entity ent : entityMap.values()) {
+            if (ent.isDefined() && ent.isPrivate() && !ent.isConstant() && !ent.isRefered()) {
+                errorHandler.warn(ent.location(), "unused variable: " + ent.getName());
+            }
+        }
+
+        for (LocalScope funScope : children) {
+            for (LocalScope s : funScope.children) {
+                s.checkReferences(errorHandler);
+            }
+        }
     }
 }
