@@ -135,7 +135,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     }
 
     private void assign(Location location, Expr lhs, Expr rhs) {
-        stmts.add(new Assign(location, addressof(lhs), rhs));
+        stmts.add(new Assign(location, addressOf(lhs), rhs));
     }
 
     private DefinedVariable tmpVar(Type type) {
@@ -320,7 +320,8 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         Label contLabel = new Label();
         Label endLabel = new Label();
 
-        transformStmt(node.getInit());
+        StmtNode init = node.getInit();
+        if (init != null) transformStmt(init);
 
         label(begLabel);
         cjump(node.location(), transformExpr(node.getCond()), bodyLabel, endLabel);
@@ -331,7 +332,8 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         popBreak();
         popContinue();
         label(contLabel);
-        transformStmt(node.getIncr());
+        StmtNode incr = node.getIncr();
+        if (incr != null) transformStmt(incr);
         jump(begLabel);
         label(endLabel);
         return null;
@@ -390,7 +392,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
             return isStatement() ? null : lhs;
         } else {
             DefinedVariable a = tmpVar(pointerTo(lhsType));
-            assign(location, ref(a), addressof(lhs));
+            assign(location, ref(a), addressOf(lhs));
             assign(location, mem(a), bin(op, lhsType, mem(a), rhs));
             return isStatement() ? null : mem(a);
         }
@@ -554,7 +556,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         } else {
             DefinedVariable a = tmpVar(pointerTo(type));
             DefinedVariable v = tmpVar(type);
-            assign(location, ref(a), addressof(expr));
+            assign(location, ref(a), addressOf(expr));
             assign(location, ref(v), mem(a));
             assign(location, mem(a), bin(op, type, mem(a), imm(type, 1)));
             return ref(v);
@@ -579,7 +581,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
 
     @Override
     public Expr visit(MemberNode node) {
-        Expr expr = addressof(transformExpr(node.getExpr()));
+        Expr expr = addressOf(transformExpr(node.getExpr()));
         Expr offset = ptrdiff(node.offset());
         Expr addr = new Bin(ptr_t(), Op.ADD, expr, offset);
         return node.isLoadable() ? mem(addr, node.getType()) : addr;
@@ -620,7 +622,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     @Override
     public Expr visit(AddressNode node) {
         Expr expr = transformExpr(node.getExpr());
-        return node.getExpr().isLoadable() ? addressof(expr) : expr;
+        return node.getExpr().isLoadable() ? addressOf(expr) : expr;
     }
 
     @Override
@@ -651,7 +653,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
             return transformExpr(node.getEntity().getValue());
         }
         Var var = ref(node.getEntity());
-        return node.isLoadable() ? var : addressof(var);
+        return node.isLoadable() ? var : addressOf(var);
     }
 
     @Override
@@ -669,7 +671,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         return "++".equals(uniOp) ? Op.ADD : Op.SUB;
     }
 
-    private Expr addressof(Expr expr) {
+    private Expr addressOf(Expr expr) {
         return expr.addressNode(ptr_t());
     }
 

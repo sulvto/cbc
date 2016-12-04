@@ -15,8 +15,8 @@ int main(int args) {
    int j=2;
    int z = i+j;
 
-   for(;i<z;i++) {
-        j=z++;
+   for(;i<z;) {
+//        j=z++;
         j=add(j,z);
    }
    return i+j+z;

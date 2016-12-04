@@ -22,6 +22,14 @@ public class FunctionType extends Type {
         return paramTypes.isVararg();
     }
 
+    public boolean acceptsArgc(long numArgs) {
+        if (paramTypes.isVararg()) {
+            return numArgs >= paramTypes.minArgc();
+        } else {
+            return numArgs == paramTypes.argc();
+        }
+    }
+
     @Override
     public boolean isFunction() {
         return true;

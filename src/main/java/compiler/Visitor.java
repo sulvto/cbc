@@ -88,9 +88,12 @@ public abstract class Visitor implements ASTVisitor<Void, Void> {
 
     @Override
     public Void visit(ForNode forNode) {
-        visitStmt(forNode.getInit());
-        visitExpr(forNode.getCond());
-        visitStmt(forNode.getIncr());
+        StmtNode init = forNode.getInit();
+        if (init != null) visitStmt(init);
+        ExprNode cond = forNode.getCond();
+        if(cond!=null) visitExpr(cond);
+        StmtNode incr = forNode.getIncr();
+        if(incr!=null) visitStmt(incr);
         visitStmt(forNode.getBody());
         return null;
     }

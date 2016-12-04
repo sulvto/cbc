@@ -23,12 +23,16 @@ public class CondExprNode extends ExprNode {
         return elseExpr;
     }
 
+    public void setElseExpr(ExprNode elseExpr) {
+        this.elseExpr = elseExpr;
+    }
+
     public ExprNode getThenExpr() {
         return thenExpr;
     }
 
-    public void setElseExpr(ExprNode elseExpr) {
-        this.elseExpr = elseExpr;
+    public void setThenExpr(ExprNode thenExpr) {
+        this.thenExpr = thenExpr;
     }
 
     @Override

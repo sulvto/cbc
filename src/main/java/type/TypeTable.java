@@ -192,6 +192,14 @@ public class TypeTable {
         }
     }
 
+    public Type signedStackType() {
+        return signedLong();
+    }
+
+    public Type unsignedStackType() {
+        return unsignedLong();
+    }
+
     private Collection<Type> types() {
         return table.values();
     }
