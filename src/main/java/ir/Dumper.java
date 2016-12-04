@@ -16,6 +16,11 @@ public class Dumper {
     PrintStream stream;
     private int numIndent;
 
+    public Dumper(PrintStream s) {
+        stream = s;
+        numIndent = 0;
+    }
+
     public void printClass(Object obj) {
         printIndent();
         stream.println("<<" + obj.getClass().getSimpleName() + ">>");

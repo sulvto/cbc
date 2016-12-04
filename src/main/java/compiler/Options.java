@@ -1,6 +1,9 @@
 package compiler;
 
 import parser.LibraryLoader;
+import sysdep.Platform;
+import sysdep.X86Linux;
+import type.TypeTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +22,7 @@ public class Options {
 
     private CompilerMode mode;
 
-//    private Platform platform = new X86Linux();
+    private Platform platform = new X86Linux();
 //    private AssemblerOptions asOptions = new AssemblerOptions();
 //    private LinkerOptions ldOptions= new LinkerOptions();
     private String outputFileName;
@@ -150,9 +153,9 @@ public class Options {
 
     }
 
-//    public TypeTable typeTable() {
-//        return platform.typeTable();
-//    }
+    public TypeTable typeTable() {
+        return platform.typeTable();
+    }
 //
 //    public Assembler assembler(ErrorHandler errorHandler) {
 //        return platform.assembler(errorHandler);

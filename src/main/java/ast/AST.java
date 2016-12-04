@@ -1,9 +1,6 @@
 package ast;
 
-import entity.DefinedFunction;
-import entity.DefinedVariable;
-import entity.Entity;
-import entity.ToplevelScope;
+import entity.*;
 import ir.IR;
 
 import java.io.PrintStream;
@@ -18,7 +15,7 @@ public class AST extends Node {
     Location source;
     Declarations declarations;
     ToplevelScope scope;
-    ConstanTable constanTable;
+    ConstantTable constantTable;
 
 
     public AST(Location source, Declarations declarations) {
@@ -91,22 +88,22 @@ public class AST extends Node {
         return scope;
     }
 
-    public void setConstanTable(ConstanTable table) {
-        if (this.constanTable != null) {
+    public void setconstantTable(ConstantTable table) {
+        if (this.constantTable != null) {
             throw new Error("must not happen: ConstantTable set twice");
         }
-        this.constanTable = table;
+        this.constantTable = table;
     }
 
-    public ConstanTable getConstanTable() {
-        if (this.constanTable == null) {
-            throw new Error("must not happen: AST.constanTable is null");
+    public ConstantTable getConstantTable() {
+        if (this.constantTable == null) {
+            throw new Error("must not happen: AST.constantTable is null");
         }
-        return  constanTable;
+        return  constantTable;
     }
 
     public IR ir(){
-        return new IR(source, declarations.defvars(), declarations.defuns(), declarations.funcdecls(), scope, constanTable);
+        return new IR(source, declarations.defvars(), declarations.defuns(), declarations.funcdecls(), scope, constantTable);
     }
 
     @Override

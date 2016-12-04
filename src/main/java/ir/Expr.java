@@ -3,8 +3,8 @@ package ir;
 import asm.ImmediateValue;
 import asm.MemoryReference;
 import asm.Operand;
+import asm.Type;
 import entity.Entity;
-import type.Type;
 
 /**
  * Created by sulvto on 16-11-18.

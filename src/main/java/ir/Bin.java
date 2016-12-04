@@ -1,6 +1,7 @@
 package ir;
 
-import type.Type;
+
+import asm.Type;
 
 /**
  * Created by sulvto on 16-11-22.

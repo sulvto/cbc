@@ -3,20 +3,14 @@ package ir;
 import asm.Type;
 
 /**
- * Created by sulvto on 16-11-21.
+ * Created by sulvto on 16-12-3.
  */
-public class Uni extends Expr {
-    private Op op;
+public class Mem extends Expr {
     private Expr expr;
 
-    public Uni(Type type, Op op, Expr expr) {
+    public Mem(Type type,Expr expr) {
         super(type);
-        this.op = op;
         this.expr = expr;
-    }
-
-    public Op getOp() {
-        return op;
     }
 
     public Expr getExpr() {
@@ -24,8 +18,12 @@ public class Uni extends Expr {
     }
 
     @Override
+    public Expr addressNode(Type type) {
+        return expr;
+    }
+
+    @Override
     protected void doDump(Dumper d) {
-        d.printMember("op", op.toString());
         d.printMember("expr", expr);
     }
 

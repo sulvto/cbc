@@ -11,6 +11,24 @@ import java.util.Map;
  * Created by sulvto on 16-11-19.
  */
 public class TypeTable {
+    public static TypeTable ilp32() {
+        return newTable(1, 2, 4, 4, 4);
+    }
+
+    private static TypeTable newTable(int charsize, int shortsize, int intsize, int longsize, int prtsize) {
+        TypeTable table = new TypeTable(intsize, longsize, prtsize);
+        table.put(new VoidTypeRef(), new VoidType());
+        table.put(IntegerTypeRef.charRef(), new IntegerType(charsize, true, "char"));
+        table.put(IntegerTypeRef.shortRef(), new IntegerType(shortsize, true, "short"));
+        table.put(IntegerTypeRef.intRef(), new IntegerType(intsize, true, "int"));
+        table.put(IntegerTypeRef.longRef(), new IntegerType(longsize, true, "long"));
+        table.put(IntegerTypeRef.ucharRef(), new IntegerType(charsize, false, "unsigned char"));
+        table.put(IntegerTypeRef.ushortRef(), new IntegerType(shortsize, false, "unsigned short"));
+        table.put(IntegerTypeRef.uintRef(), new IntegerType(intsize, false, "unsigned int"));
+        table.put(IntegerTypeRef.ulongRef(), new IntegerType(longsize, false, "unsigned long"));
+        return table;
+    }
+
     private int intSize;
     private int longSize;
     private int pointerSize;

@@ -10,7 +10,7 @@ import asm.Symbol;
 public class ConstantEntry {
     private String value;
     private Symbol symbol;
-    private MemoryReference memory;
+    private MemoryReference memref;
     private ImmediateValue address;
 
     public ConstantEntry(String value) {
@@ -28,19 +28,23 @@ public class ConstantEntry {
         return symbol;
     }
 
-    public void setMemory(MemoryReference memory) {
-        this.memory = memory;
+    public void setMemref(MemoryReference memref) {
+        this.memref = memref;
     }
 
-    public MemoryReference getMemory() {
-        if (memory == null) {
-            throw new Error("must not happen: memory == null");
+    public MemoryReference getMemref() {
+        if (memref == null) {
+            throw new Error("must not happen: memref == null");
         }
-        return memory;
+        return memref;
     }
 
     public void setAddress(ImmediateValue address) {
         this.address = address;
+    }
+
+    public ImmediateValue getAddress() {
+        return address;
     }
 
     public String getValue() {

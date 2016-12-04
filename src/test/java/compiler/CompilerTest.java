@@ -10,7 +10,7 @@ import java.net.URL;
  */
 public class CompilerTest {
     private String getResourcePath(String name) throws FileNotFoundException {
-        URL resource = CompilerTest.class.getResource("/"+name);
+        URL resource = CompilerTest.class.getResource("/" + name);
         if (resource == null) {
             throw new FileNotFoundException();
         }
@@ -18,11 +18,12 @@ public class CompilerTest {
     }
 
     @Test
-    public void main() throws Exception {
+    public void dumpAst() throws Exception {
 
         String[] args = {"--dump-ast", getResourcePath("hello.c")};
         Compiler.main(args);
     }
+
 
     @Test
     public void commandMain() throws Exception {

@@ -18,7 +18,9 @@ public class Location {
         this.token = token;
     }
 
-
+    public String getSourceName() {
+        return sourceName;
+    }
 
     public CflatToken[] token() {
         return new CflatToken[0];

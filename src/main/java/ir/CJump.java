@@ -33,8 +33,8 @@ public class CJump extends Stmt {
     @Override
     protected void doDump(Dumper d) {
         d.printMember("cond", cond);
-//        d.printMember("thenLabel", thenLabel);
-//        d.printMember("elseLabel", elseLabel);
+        d.printMember("thenLabel", thenLabel);
+        d.printMember("elseLabel", elseLabel);
     }
 
     @Override

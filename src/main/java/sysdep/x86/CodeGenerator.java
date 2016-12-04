@@ -1,19 +1,23 @@
 package sysdep.x86;
 
+import asm.Type;
+import sysdep.CodeGeneratorOptions;
+import utils.ErrorHandler;
+
 /**
  * Created by sulvto on 16-11-26.
  */
 public class CodeGenerator {
-//    private final CodeGeneratorOptions options;
-//    private final Type naturalType;
-//    private final ErrorHandler errorHandler;
-//
-//    public CodeGenerator(CodeGeneratorOptions options, Type naturalType, ErrorHandler errorHandler) {
-//        this.options = options;
-//        this.naturalType = naturalType;
-//        this.errorHandler = errorHandler;
-//
-//    }
+    private final CodeGeneratorOptions options;
+    private final Type naturalType;
+    private final ErrorHandler errorHandler;
+
+    public CodeGenerator(CodeGeneratorOptions options, Type naturalType, ErrorHandler errorHandler) {
+        this.options = options;
+        this.naturalType = naturalType;
+        this.errorHandler = errorHandler;
+
+    }
 //
 //
 //    private Register ax(Type type) {

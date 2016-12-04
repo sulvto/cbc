@@ -2,10 +2,7 @@ package entity;
 
 import asm.MemoryReference;
 import asm.Operand;
-import ast.Dumpable;
-import ast.Dumper;
-import ast.Location;
-import ast.TypeNode;
+import ast.*;
 import type.Type;
 
 /**
@@ -17,7 +14,7 @@ public abstract class Entity implements Dumpable {
     protected String name;
     protected TypeNode typeNode;
     private long nRefered;
-    private MemoryReference memory;
+    protected MemoryReference memref;
     private Operand address;
 
     public Entity(boolean priv, TypeNode type, String name) {
@@ -48,6 +45,10 @@ public abstract class Entity implements Dumpable {
         return isPrivate;
     }
 
+    public ExprNode getValue() {
+        throw new Error("Entity#value");
+    }
+
     public boolean isParameter() {
         return false;
     }
@@ -72,13 +73,13 @@ public abstract class Entity implements Dumpable {
         return false;
     }
 
-    public void setMemory(MemoryReference memory) {
-        this.memory = memory;
+    public void setMemref(MemoryReference memref) {
+        this.memref = memref;
     }
 
-    public MemoryReference memory() {
+    public MemoryReference getMemref() {
         checkAddress();
-        return memory;
+        return memref;
     }
 
     public void setAddress(Operand address) {
@@ -91,7 +92,7 @@ public abstract class Entity implements Dumpable {
     }
 
     void checkAddress() {
-        if (memory == null && address == null) {
+        if (memref == null && address == null) {
             throw new Error("address did not resolved； " + name);
         }
     }

@@ -3,7 +3,7 @@ package ir;
 import asm.ImmediateValue;
 import asm.IntegerLiteral;
 import asm.MemoryReference;
-import type.Type;
+import asm.Type;
 
 /**
  * Created by sulvto on 16-11-22.
