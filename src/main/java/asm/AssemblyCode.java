@@ -1,7 +1,14 @@
 package asm;
 
+import java.io.PrintStream;
+
 /**
  * Created by sulvto on 16-11-26.
  */
-public class AssemblyCode {
+public interface AssemblyCode {
+    String toSource();
+
+    void dump();
+
+    void dump(PrintStream printStream);
 }

@@ -1,5 +1,6 @@
 package compiler;
 
+import asm.AssemblyCode;
 import ast.AST;
 import ast.ExprNode;
 import ast.StmtNode;
@@ -12,7 +13,7 @@ import parser.Parser;
 import type.TypeTable;
 import utils.ErrorHandler;
 
-import java.io.File;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -72,10 +73,14 @@ public class Compiler {
         if (dumpSemant(ast, opts.mode())) return;
         IR ir = new IRGenerator(types, errorHandler).generate(sem);
         if (dumpIR(ir, opts.mode())) return;
-        // TODO
-//        AssemblyCode asm = generateAssembly(ir, opts);
-//        if (dumpAsm(asm, opts.mode())) return;
-//        writeFile(destPath, asm.toSource());
+        AssemblyCode asm = generateAssembly(ir, opts);
+        if (dumpAsm(asm, opts.mode())) return;
+        if (printAsm(asm, opts.mode())) return;
+        writeFile(destPath, asm.toSource());
+    }
+
+    private AssemblyCode generateAssembly(IR ir, Options opts) {
+        return opts.codeGenerator(errorHandler).generate(ir);
     }
 
     private AST semanticAnalyze(AST ast, TypeTable types, Options opts)throws SemanticException {
@@ -91,45 +96,6 @@ public class Compiler {
         return ast;
     }
 
-    private boolean dumpIR(IR ir, CompilerMode mode) {
-        if (CompilerMode.DumpIr == mode) {
-            ir.dump();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean dumpSemant(AST ast, CompilerMode mode) {
-        switch (mode) {
-            case DumpReference:
-                return true;
-            case DumpSemantic:
-                ast.dump();
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private boolean dumpAST(AST ast, CompilerMode mode) {
-        switch (mode) {
-            case DumpTokens:
-                ast.dumpTokens(System.out);
-                return true;
-            case DumpAst:
-                ast.dump();
-                return true;
-            case DumpStmt:
-                findStmt(ast).dump();
-                return true;
-            case DumpExpr:
-                findExpr(ast).dump();
-                return true;
-            default:
-                return false;
-        }
-    }
-
     private ExprNode findExpr(AST ast) {
         ExprNode expr = ast.getSingleMainExpr();
         if (expr == null) {
@@ -137,6 +103,8 @@ public class Compiler {
         }
         return expr;
     }
+
+
 
     private StmtNode findStmt(AST ast) {
         StmtNode stmt = ast.getSingleMainStmt();
@@ -192,5 +160,78 @@ public class Compiler {
     private void errorExit(String message) {
         errorHandler.error(message);
         System.exit(1);
+    }
+
+    private void writeFile(String destPath, String str) throws FileException {
+        if ("-".equals(destPath)) {
+            System.out.print(str);
+            return;
+        }
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destPath)))){
+
+            bufferedWriter.write(str);
+        } catch (FileNotFoundException e) {
+            errorHandler.error("file not found: "+destPath);
+            throw new FileException("file error");
+        } catch (IOException e) {
+            errorHandler.error("io error: "+e.getMessage());
+            throw new FileException("file error");
+        }
+    }
+
+    private boolean printAsm(AssemblyCode asm, CompilerMode mode) {
+        if (CompilerMode.PrintAsm == mode) {
+            System.out.print(asm.toSource());
+            return true;
+        }
+        return false;
+
+    }
+
+    private boolean dumpAsm(AssemblyCode asm, CompilerMode mode) {
+        if (CompilerMode.DumpAsm == mode) {
+            asm.dump(System.out);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean dumpIR(IR ir, CompilerMode mode) {
+        if (CompilerMode.DumpIr == mode) {
+            ir.dump();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean dumpSemant(AST ast, CompilerMode mode) {
+        switch (mode) {
+            case DumpReference:
+                return true;
+            case DumpSemantic:
+                ast.dump();
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean dumpAST(AST ast, CompilerMode mode) {
+        switch (mode) {
+            case DumpTokens:
+                ast.dumpTokens(System.out);
+                return true;
+            case DumpAst:
+                ast.dump();
+                return true;
+            case DumpStmt:
+                findStmt(ast).dump();
+                return true;
+            case DumpExpr:
+                findExpr(ast).dump();
+                return true;
+            default:
+                return false;
+        }
     }
 }
