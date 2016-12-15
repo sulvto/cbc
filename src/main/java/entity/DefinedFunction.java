@@ -12,8 +12,6 @@ import java.util.List;
  * Created by sulvto on 16-11-14.
  */
 public class DefinedFunction extends Function {
-    private TypeNode typeNode;
-    private boolean isPrivate;
     private Params params;
     private BlockNode body;
     private LocalScope scope;
