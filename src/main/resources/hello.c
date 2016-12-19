@@ -1,6 +1,6 @@
 // import stdio;
 
-struct a point {
+struct point {
     int x;
     int y;
 };
@@ -15,7 +15,7 @@ int main(int args) {
    int j=2;
    int z = i+j;
 
-   for(;i<z;) {
+   for(int a=0;i<z;) {
         j=z+1;
         j=add(j,z);
         ass();

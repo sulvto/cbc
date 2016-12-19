@@ -1,9 +1,10 @@
 package compiler;
 
 import parser.LibraryLoader;
-import sysdep.Platform;
-import sysdep.X86Linux;
+import sysdep.*;
+import sysdep.x86.CodeGenerator;
 import type.TypeTable;
+import utils.ErrorHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +24,9 @@ public class Options {
     private CompilerMode mode;
 
     private Platform platform = new X86Linux();
-//    private AssemblerOptions asOptions = new AssemblerOptions();
-//    private LinkerOptions ldOptions= new LinkerOptions();
+    private CodeGeneratorOptions genOptions = new CodeGeneratorOptions();
+    private AssemblerOptions asOptions = new AssemblerOptions();
+    //    private LinkerOptions ldOptions= new LinkerOptions();
     private String outputFileName;
     private List<LdArg> ldArgs;
     private List<SourceFile> sourceFiles;
@@ -47,7 +49,7 @@ public class Options {
                     mode = CompilerMode.fromOption(arg);
                 } else if (arg.startsWith("--debug-parser")) {
                     debugParser = true;
-                }else if (arg.startsWith("-o")) {
+                } else if (arg.startsWith("-o")) {
                     outputFileName = getOptArg(arg, argIterator);
                 }
                 //TODO
@@ -74,7 +76,7 @@ public class Options {
 
         for (SourceFile src : sourceFiles) {
             if (!src.isKnownFileType()) {
-                parseError("unknown file type: "+src.path());
+                parseError("unknown file type: " + src.path());
             }
         }
 
@@ -156,12 +158,16 @@ public class Options {
     public TypeTable typeTable() {
         return platform.typeTable();
     }
-//
-//    public Assembler assembler(ErrorHandler errorHandler) {
-//        return platform.assembler(errorHandler);
-//    }
-//
-//    AssemblerOptions asOptions() {
-//        return asOptions;
-//    }
+
+    public CodeGenerator codeGenerator(ErrorHandler errorHandler) {
+        return platform.codeGenerator(genOptions, errorHandler);
+    }
+
+    public Assembler assembler(ErrorHandler errorHandler) {
+        return platform.assembler(errorHandler);
+    }
+
+    AssemblerOptions asOptions() {
+        return asOptions;
+    }
 }
