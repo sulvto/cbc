@@ -1,13 +1,17 @@
 package sysdep.x86;
 
+import asm.Label;
+import asm.SymbolTable;
 import asm.Type;
+import entity.DefinedFunction;
+import ir.*;
 import sysdep.CodeGeneratorOptions;
 import utils.ErrorHandler;
 
 /**
  * Created by sulvto on 16-11-26.
  */
-public class CodeGenerator {
+public class CodeGenerator implements sysdep.CodeGenerator , IRVisitor<Void,Void>{
     private final CodeGeneratorOptions options;
     private final Type naturalType;
     private final ErrorHandler errorHandler;
@@ -17,6 +21,112 @@ public class CodeGenerator {
         this.naturalType = naturalType;
         this.errorHandler = errorHandler;
 
+    }
+
+    private AssemblyCode as;
+    private Label epilogue;
+
+    private AssemblyCode compileStmts(DefinedFunction func) {
+        as = newAssemblyCode();
+        epilogue = new Label();
+        for (Stmt s : func.getIr()) {
+            compileStme(s);
+        }
+        as.lalel(epilogue);
+        return as;
+    }
+
+    private AssemblyCode newAssemblyCode() {
+        return new AssemblyCode(naturalType,STACK_WORD_SIZE,new SymbolTable(),options.isVerboseAsm());
+    }
+
+    private void compileStme(Stmt stmt) {
+        if (options.isVerboseAsm()) {
+            if (stmt.getLocation() != null) {
+                as.comment(stmt.getLocation().numberedLine());
+            }
+        }
+        stmt.accept(this);
+    }
+
+    @Override
+    public Void visit(Assign assign) {
+        return null;
+    }
+
+    @Override
+    public Void visit(CJump cJump) {
+        return null;
+    }
+
+    @Override
+    public Void visit(ExprStmt exprStmt) {
+        return null;
+    }
+
+    @Override
+    public Void visit(LabelStmt labelStmt) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Jump jump) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Switch aSwitch) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Return aReturn) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Bin bin) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Int anInt) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Addr addr) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Call call) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Mem mem) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Str str) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Uni uni) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Var var) {
+        return null;
+    }
+
+    @Override
+    public AssemblyCode generate(IR ir) {
+        return null;
     }
 //
 //
