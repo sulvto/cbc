@@ -1,9 +1,7 @@
 package sysdep.x86;
 
-import asm.Label;
-import asm.SymbolTable;
-import asm.Type;
-import entity.DefinedFunction;
+import asm.*;
+import entity.*;
 import ir.*;
 import sysdep.CodeGeneratorOptions;
 import utils.ErrorHandler;
@@ -11,7 +9,7 @@ import utils.ErrorHandler;
 /**
  * Created by sulvto on 16-11-26.
  */
-public class CodeGenerator implements sysdep.CodeGenerator , IRVisitor<Void,Void>{
+public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void> {
     private final CodeGeneratorOptions options;
     private final Type naturalType;
     private final ErrorHandler errorHandler;
@@ -22,6 +20,101 @@ public class CodeGenerator implements sysdep.CodeGenerator , IRVisitor<Void,Void
         this.errorHandler = errorHandler;
 
     }
+
+    @Override
+    public AssemblyCode generate(IR ir) {
+        locateSymbols(ir);
+        return generateAssemblyCode(ir);
+    }
+
+    static final String CONST_SYMBOL_BASE = ".LC";
+
+    private void locateSymbols(IR ir) {
+        SymbolTable constSymbols = new SymbolTable(CONST_SYMBOL_BASE);
+        for (ConstantEntry ent : ir.constanTable().entries()) {
+            locateStringLiteral(ent, constSymbols);
+        }
+        for (Variable var : ir.allGlobalVariables()) {
+            locateGlobalVariable(var);
+        }
+
+        for (Function func : ir.allFunctions()) {
+            locateFuncation(func);
+        }
+    }
+
+    private void locateGlobalVariable(Entity ent) {
+        Symbol sym = symbol(ent.symbolString(), ent.isPrivate());
+        if (options.isPositionIndependent()) {
+            if (ent.isPrivate() || optimizeGvarAccess(ent)) {
+                ent.setMemref(mem(localGOTSymbol(sym), GOTBaseReg()));
+            } else {
+                ent.setAddress(mem(globalGOTSymbol(sym), GOTBaseReg()));
+            }
+        } else {
+            ent.setMemref(mem(sym));
+            ent.setAddress(imm(sym));
+        }
+    }
+
+    private Symbol symbol(String sym, boolean isPrivate) {
+        return isPrivate ? privateSymbol(sym) : globalSymbol(sym);
+    }
+
+    private Symbol globalSymbol(String sym) {
+        return new NamedSymbol(sym);
+    }
+
+    private Symbol privateSymbol(String sym) {
+        return new NamedSymbol(sym);
+    }
+
+    private void locateFuncation(Function func) {
+        func.setCallingSymbol(callingSymbol(func));
+        locateGlobalVariable(func);
+    }
+
+    private Symbol callingSymbol(Function func) {
+        if (func.isPrivate()) {
+            return privateSymbol(func.symbolString());
+        } else {
+            Symbol sym = globalSymbol(func.symbolString());
+            return shouldUsePLT(func) ? PLTSymbol(sym) : sym;
+        }
+    }
+
+    private boolean shouldUsePLT(Entity ent) {
+        return options.isPositionIndependent()&&!optimizeGvarAccess(ent);
+    }
+
+    private boolean optimizeGvarAccess(Entity ent) {
+        return options.isPIERequired() && ent.isDefined();
+    }
+
+    private void locateStringLiteral(ConstantEntry ent, SymbolTable syms) {
+        ent.setSymbol(syms.newSymbol());
+        if (options.isPositionIndependent()) {
+            Symbol offset = localGOTSymbol(ent.getSymbol());
+            ent.setMemref(mem(offset, GOTBaseReg()));
+        } else {
+            ent.setMemref(mem(ent.getSymbol()));
+            ent.setAddress(imm(ent.getSymbol()));
+        }
+    }
+
+
+
+    private AssemblyCode generateAssemblyCode(IR ir) {
+        AssemblyCode file = newAssemblyCode();
+        file._file(ir.fileName());
+
+        // TODO 12-21 22:03
+        if (ir.isGlobalVariableDefind()) {
+
+        }
+        return null;
+    }
+
 
     private AssemblyCode as;
     private Label epilogue;
@@ -37,7 +130,7 @@ public class CodeGenerator implements sysdep.CodeGenerator , IRVisitor<Void,Void
     }
 
     private AssemblyCode newAssemblyCode() {
-        return new AssemblyCode(naturalType,STACK_WORD_SIZE,new SymbolTable(),options.isVerboseAsm());
+        return new AssemblyCode(naturalType, STACK_WORD_SIZE, new SymbolTable(), options.isVerboseAsm());
     }
 
     private void compileStme(Stmt stmt) {
@@ -48,6 +141,7 @@ public class CodeGenerator implements sysdep.CodeGenerator , IRVisitor<Void,Void
         }
         stmt.accept(this);
     }
+
 
     @Override
     public Void visit(Assign assign) {
@@ -124,57 +218,52 @@ public class CodeGenerator implements sysdep.CodeGenerator , IRVisitor<Void,Void
         return null;
     }
 
-    @Override
-    public AssemblyCode generate(IR ir) {
-        return null;
+
+    private Register ax(Type type) {
+        return new Register(RegisterClass.AX, type);
     }
-//
-//
-//    private Register ax(Type type) {
-//        return new Register(RegisterClass.AX, type);
-//    }
-//
-//    private Register bx(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register cx(Type type) {
-//        return new Register(RegisterClass.CX, type);
-//    }
-//
-//    private Register dx(Type type) {
-//        return new Register(RegisterClass.DX, type);
-//    }
-//
-//    private Register si(Type type) {
-//        return new Register(RegisterClass.SI, type);
-//    }
-//
-//    private Register di(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register sp(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register bp(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register ax(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register cx(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register al(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
-//
-//    private Register cl(Type type) {
-//        return new Register(RegisterClass.BX, type);
-//    }
+
+    private Register bx(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register cx(Type type) {
+        return new Register(RegisterClass.CX, type);
+    }
+
+    private Register dx(Type type) {
+        return new Register(RegisterClass.DX, type);
+    }
+
+    private Register si(Type type) {
+        return new Register(RegisterClass.SI, type);
+    }
+
+    private Register di(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register sp(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register bp(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register ax(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register cx(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register al(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
+
+    private Register cl(Type type) {
+        return new Register(RegisterClass.BX, type);
+    }
 }

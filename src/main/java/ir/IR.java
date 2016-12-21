@@ -62,4 +62,12 @@ public class IR {
         d.printVars("variables", defvars);
         d.printFuncs("functions", defuns);
     }
+
+    public ConstantTable constanTable() {
+        return null;
+    }
+
+    public Variable[] allGlobalVariables() {
+        return new Variable[0];
+    }
 }

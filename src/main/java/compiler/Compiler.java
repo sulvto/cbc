@@ -1,6 +1,5 @@
 package compiler;
 
-import asm.AssemblyCode;
 import ast.AST;
 import ast.ExprNode;
 import ast.StmtNode;
@@ -10,6 +9,7 @@ import exception.SemanticException;
 import exception.SyntaxException;
 import ir.IR;
 import parser.Parser;
+import sysdep.AssemblyCode;
 import type.TypeTable;
 import utils.ErrorHandler;
 
