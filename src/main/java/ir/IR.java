@@ -64,10 +64,53 @@ public class IR {
     }
 
     public ConstantTable constanTable() {
-        return null;
+        return constantTable;
     }
 
-    public Variable[] allGlobalVariables() {
-        return new Variable[0];
+    public List<Variable> allGlobalVariables() {
+        return scope.allGlobalVariables();
+    }
+
+    /**
+     * global scope and is initialized
+     * @return list
+     */
+    public List<DefinedVariable> definedGlobalVariables() {
+        if (gvars == null) {
+            initVariables();
+        }
+        return gvars;
+    }
+
+    private void initVariables() {
+        gvars = new ArrayList<>();
+        comms = new ArrayList<>();
+        for (DefinedVariable var : scope.definedGlobalScopeVariables()) {
+            (var.hasInitializer() ? gvars : comms).add(var);
+        }
+    }
+
+    /**
+     * global scope and is not initialized
+     * @return
+     */
+    public List<DefinedVariable> definedCommonSymbols() {
+        if (comms == null) {
+            initVariables();
+        }
+        return comms;
+    }
+
+    public boolean isGlobalVariableDefined() {
+        return !definedGlobalVariables().isEmpty();
+    }
+
+
+    public boolean isStringLiteralDefined() {
+        return !constantTable.isEmpty();
+    }
+
+    public boolean isCommonSymbolDefined() {
+        return !definedCommonSymbols().isEmpty();
     }
 }

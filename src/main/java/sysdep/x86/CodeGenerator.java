@@ -6,6 +6,8 @@ import ir.*;
 import sysdep.CodeGeneratorOptions;
 import utils.ErrorHandler;
 
+import java.util.List;
+
 /**
  * Created by sulvto on 16-11-26.
  */
@@ -108,11 +110,42 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         AssemblyCode file = newAssemblyCode();
         file._file(ir.fileName());
 
-        // TODO 12-21 22:03
-        if (ir.isGlobalVariableDefind()) {
-
+        if (ir.isGlobalVariableDefined()) {
+            generateDataSection(file, ir.definedGlobalVariables());
         }
-        return null;
+        if (ir.isStringLiteralDefined()) {
+            generateReadOnlyDataSction(file,ir.constanTable())
+        }
+        if (ir.isFunctionDefined()) {
+            generateTextSection(file, ir.definedFunctions());
+        }
+        if (ir.isCommonSymbolDefined()) {
+            generateCommonSymbols(file, ir.definedCommonSymbols());
+        }
+        if (options.isPositionIndependent()) {
+            PICThunk(file, GOTBaseReg());
+        }
+        return file;
+    }
+
+    /***
+     *
+     * @param file
+     * @param gvars global variable
+     */
+    private void generateDataSection(AssemblyCode file, List<DefinedVariable> gvars) {
+        file._data();
+        for (DefinedVariable var : gvars) {
+            Symbol sym = globalSymbol(var.symbolString());
+            if (var.isPrivate()) {
+                file._globl(sym);
+            }
+            file._align(var.alignment());
+            file._type(sym, "@object");
+            file._size(sym, var.allocSize());
+            file.label(sym);
+            generateImmediate(file, var.getType().allocSize(), var.getIr());
+        }
     }
 
 

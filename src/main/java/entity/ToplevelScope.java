@@ -3,9 +3,7 @@ package entity;
 import exception.SemanticException;
 import utils.ErrorHandler;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sulvto on 16-11-18.
@@ -72,5 +70,49 @@ public class ToplevelScope extends Scope {
                 s.checkReferences(errorHandler);
             }
         }
+    }
+
+    public List<Variable> allGlobalVariables() {
+        List<Variable> result = new ArrayList<>();
+        for (Entity ent : entityMap.values()) {
+            if (ent instanceof Variable) {
+                result.add((Variable) ent);
+            }
+        }
+        result.addAll(staticLocalVariables());
+        return result;
+    }
+
+    public List<DefinedVariable> definedGlobalScopeVariables() {
+        List<DefinedVariable> result = new ArrayList<>();
+
+        for (Entity ent : entityMap.values()) {
+            if (ent instanceof DefinedVariable) {
+                result.add((DefinedVariable) ent);
+            }
+        }
+        result.addAll(staticLocalVariables());
+        return result;
+    }
+
+    private List<DefinedVariable> staticLocalVariables() {
+        if (staticLocalVariables == null) {
+            staticLocalVariables = new ArrayList<>();
+            for (LocalScope s : children) {
+                staticLocalVariables.addAll(s.staticLocalVariable());
+            }
+            Map<String, Integer> seqTable = new HashMap<>();
+            for (DefinedVariable var : staticLocalVariables) {
+                Integer seq = seqTable.get(var.getName());
+                if (seq == null) {
+                    var.setSequence(0);
+                    seqTable.put(var.getName(), 1);
+                } else {
+                    var.setSequence(seq);
+                    seqTable.put(var.getName(), seq + 1);
+                }
+            }
+        }
+        return staticLocalVariables;
     }
 }
