@@ -5,6 +5,13 @@ package asm;
  * Created by sulvto on 16-11-26.
  */
 public class DirectMemoryReference extends MemoryReference {
+
+    protected Literal value;
+
+    public DirectMemoryReference(Literal value) {
+        this.value = value;
+    }
+
     @Override
     public String toSource(SymbolTable table) {
         return null;

@@ -32,10 +32,18 @@ public abstract class Entity implements Dumpable {
         return getTypeNode().getType();
     }
 
+    public long allocSize() {
+        return getType().allocSize();
+    }
+
+    public long alignment() {
+        return getType().alignment();
+    }
+
+
     public String getName() {
         return name;
     }
-
 
     public Location location() {
         return typeNode.location();
@@ -105,5 +113,4 @@ public abstract class Entity implements Dumpable {
     abstract protected void doDump(Dumper dumper);
 
     abstract public <T> T accept(EntityVisitor<T> visitor);
-
 }

@@ -211,14 +211,6 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn("jmp", new DirectMemoryReference(label.getSymbol()));
     }
 
-    void jmp(Label label) {
-        insn("jmp", new DirectMemoryReference(label.getSymbol()));
-    }
-
-    void jmp(Label label) {
-        insn("jmp", new DirectMemoryReference(label.getSymbol()));
-    }
-
     void jnz(Label label) {
         insn("jnz", new DirectMemoryReference(label.getSymbol()));
     }
@@ -271,7 +263,6 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn("setle", reg);
     }
 
-
     void test(Register a, Register b) {
         insn(b.type, "test", a, b);
     }
@@ -284,11 +275,17 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn("pop", typeSuffix(naturalType), reg);
     }
 
+    // call function by relative address
+    void call(Symbol sym) {
+        insn("call", new DirectMemoryReference(sym));
+    }
+
+    // call function by absolute address
     void callAbsolute(Register reg) {
         insn("call", new AbsoluteAddress(reg));
     }
 
-    void ret(Label label) {
+    void ret() {
         insn("ret");
     }
 
@@ -330,7 +327,7 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn(reg.type, "neg", reg);
     }
 
-    void and(Operand diff, Register base) {
+    void add(Operand diff, Register base) {
         insn(base.type, "and", diff, base);
     }
 
@@ -358,22 +355,21 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn(reg.type, "not", reg);
     }
 
-    void and(Register bits, Register base) {
+    void and(Operand bits, Register base) {
         insn(base.type, "and", bits, base);
     }
 
-    void or(Register bits, Register base) {
+    void or(Operand bits, Register base) {
         insn(base.type, "or", bits, base);
     }
 
-    void xor(Register bits, Register base) {
+    void xor(Operand bits, Register base) {
         insn(base.type, "xor", bits, base);
     }
 
     void sar(Register bits, Register base) {
         insn(base.type, "sar", bits, base);
     }
-
 
     void sal(Register bits, Register base) {
         insn(base.type, "sal", bits, base);
