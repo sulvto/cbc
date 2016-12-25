@@ -34,6 +34,14 @@ public class Instruction extends Assembly {
         this.needRelocation = reloc;
     }
 
+    public Instruction build(String mnemonic, Operand o1) {
+        return new Instruction(mnemonic, this.suffix, new Operand[]{o1}, needRelocation);
+    }
+
+    public Instruction build(String mnemonic, Operand o1, Operand o2) {
+        return new Instruction(mnemonic, this.suffix, new Operand[]{o1, o1}, needRelocation);
+    }
+
     @Override
     public boolean isInstruction() {
         return true;
@@ -72,4 +80,20 @@ public class Instruction extends Assembly {
         return stringBuilder.toString();
     }
 
+    public String mnemonic() {
+        return this.mnemonic;
+    }
+
+    public Operand operand1() {
+        return operands[0];
+    }
+
+    public Operand operand2() {
+        return operands[1];
+    }
+
+    public Symbol jmpDestination() {
+        DirectMemoryReference ref = (DirectMemoryReference) operands[0];
+        return (Symbol) ref.value;
+    }
 }

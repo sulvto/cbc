@@ -39,6 +39,10 @@ public class LocalScope extends Scope {
         return parent;
     }
 
+    public List<LocalScope> children() {
+        return children;
+    }
+
     public boolean isDefinedLocally(String name) {
         return variables.containsKey(name);
     }

@@ -1,10 +1,13 @@
 package sysdep.x86;
 
 import asm.*;
+import compiler.Parameter;
 import entity.*;
 import ir.*;
 import sysdep.CodeGeneratorOptions;
+import utils.AsmUtils;
 import utils.ErrorHandler;
+import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +34,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         return generateAssemblyCode(ir);
     }
 
+    static final String LABEL_SYMBOL_BASE = ".L";
     static final String CONST_SYMBOL_BASE = ".LC";
 
     private void locateSymbols(IR ir) {
@@ -215,6 +219,12 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         }
     }
 
+    private static final Symbol GOT = new NamedSymbol("_GLOBAL_OFFSET_TABLE_");
+
+    private void loadGOTBaseAddress(AssemblyCode file, Register register) {
+        file.call(PICThunkSymbol(register));
+        file.add(imm(GOT), register);
+    }
 
     private Register GOTBaseReg() {
         return bx();
@@ -230,6 +240,10 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
 
     private Symbol PICThunkSymbol(Register reg) {
         return new NamedSymbol("__i886.get_pc_thunk." + reg.baseName());
+    }
+
+    private Symbol PLTSymbol(Symbol base) {
+        return new SuffixedSymbol(base, "@PLT");
     }
 
     private static final String PICThunkSectionFlags = SectionFlag_allocatable
@@ -251,9 +265,18 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
 
     private static final long STACK_WORD_SIZE = 4;
 
+    private long alienStack(long size) {
+        return AsmUtils.align(size, STACK_WORD_SIZE);
+    }
+
+    private long stackSizeFromWordNum(long numWords) {
+        return numWords * STACK_WORD_SIZE;
+    }
+
     class StackFrameInfo {
         List<Register> saveRegs;
         long lvarSize;
+
         long tempSize;
 
         long saveRegsSize() {
@@ -271,6 +294,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         long frameSize() {
             return saveRegsSize() + lvarSize + tempSize;
         }
+
     }
 
     private void compileFunctionBody(AssemblyCode file, DefinedFunction func) {
@@ -302,13 +326,16 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
     }
 
     class MemInfo {
+
         MemoryReference mem;
+
         String name;
 
         MemInfo(MemoryReference mem, String name) {
             this.mem = mem;
             this.name = name;
         }
+
     }
 
     private void printStackFrameLayout(AssemblyCode file, StackFrameInfo frame, List<DefinedVariable> lvars) {
@@ -337,25 +364,133 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         file.comment("------------------------------");
     }
 
-
     private AssemblyCode as;
+
     private Label epilogue;
 
     private AssemblyCode compileStmts(DefinedFunction func) {
         as = newAssemblyCode();
         epilogue = new Label();
         for (Stmt s : func.getIr()) {
-            compileStme(s);
+            compileStmt(s);
         }
         as.lalel(epilogue);
         return as;
     }
 
-    private AssemblyCode newAssemblyCode() {
-        return new AssemblyCode(naturalType, STACK_WORD_SIZE, new SymbolTable(), options.isVerboseAsm());
+    private List<Register> usedCalleeSaveRegisters(AssemblyCode body) {
+        List<Register> result = new ArrayList<>();
+        for (Register reg : calleeSaveRegisters()) {
+            if (body.doesUser(reg)) {
+                result.add(reg);
+            }
+        }
+        result.remove(bp());
+        return result;
     }
 
-    private void compileStme(Stmt stmt) {
+    final static RegisterClass[] CALLEE_SAVE_REGISTERS = {
+            RegisterClass.BX, RegisterClass.BP, RegisterClass.SI, RegisterClass.DI
+    };
+
+    private List<Register> calleeSaveRegistersCache = null;
+
+    private List<Register> calleeSaveRegisters() {
+        if (calleeSaveRegistersCache == null) {
+            List<Register> regs = new ArrayList<>();
+            for (RegisterClass c : CALLEE_SAVE_REGISTERS) {
+                regs.add(new Register(c, naturalType));
+            }
+            calleeSaveRegistersCache = regs;
+        }
+        return calleeSaveRegistersCache;
+    }
+
+    private void generateFunctionBody(AssemblyCode file, AssemblyCode body, StackFrameInfo frame) {
+        file.virtualStack.reset();
+        prologue(file, frame.saveRegs, frame.frameSize());
+        if (options.isPositionIndependent() && body.doesUser(GOTBaseReg())) {
+            loadGOTBaseAddress(file, GOTBaseReg());
+        }
+        file.addAll(body.assemblies());
+        epilogue(file, frame.saveRegs);
+        file.virtualStack.fixOffset(0);
+    }
+
+    private void prologue(AssemblyCode file, List<Register> saveRegs, long frameSize) {
+
+        file.push(bp());
+        file.mov(sp(), bp());
+        for (Register reg : saveRegs) {
+            file.virtualPush(reg);
+        }
+        extendStack(file, frameSize);
+    }
+
+    private void epilogue(AssemblyCode file, List<Register> saveRegs) {
+        for (Register reg : ListUtils.reverse(saveRegs)) {
+            file.virtualPop(reg);
+        }
+        file.mov(bp(), sp());
+        file.pop(bp());
+        file.ret();
+    }
+
+    private final static long PARAM_START_WORD = 2;
+
+    private void locateParameters(List<Parameter> parameters) {
+        long numWords = PARAM_START_WORD;
+        for (Parameter var : parameters) {
+            var.setMemref(mem(stackSizeFromWordNum(numWords), bp()));
+            numWords++;
+        }
+    }
+
+    private long locateLocalVariables(LocalScope scope) {
+        return locateLocalVariables(scope, 0);
+    }
+
+    private long locateLocalVariables(LocalScope scope, long parentStackLen) {
+        long len = parentStackLen;
+        for (DefinedVariable var : scope.localVariable()) {
+            len = alienStack(len + var.allocSize());
+            var.setMemref(relocatableMem(-len, bp()));
+        }
+
+        long maxLen = len;
+        for (LocalScope s : scope.children()) {
+            long childLen = locateLocalVariables(s, len);
+            maxLen = Math.max(childLen, maxLen);
+        }
+
+        return maxLen;
+    }
+
+    private IndirectMemoryReference relocatableMem(long offset, Register base) {
+        return IndirectMemoryReference.relocatable(offset, base);
+    }
+
+    private void fixLocalVariableOffsets(LocalScope localScope, long len) {
+        for (DefinedVariable var : localScope.allLocalVariables()) {
+            var.getMemref().fixOffset(-len);
+        }
+    }
+
+    private void fixTempVariableOffsets(AssemblyCode asm, long len) {
+        asm.virtualStack.fixOffset(-len);
+    }
+
+    private void extendStack(AssemblyCode file, long len) {
+        if (len > 0) {
+            file.sub(imm(len), sp());
+        }
+    }
+
+    private AssemblyCode newAssemblyCode() {
+        return new AssemblyCode(naturalType, STACK_WORD_SIZE, new SymbolTable(LABEL_SYMBOL_BASE), options.isVerboseAsm());
+    }
+
+    private void compileStmt(Stmt stmt) {
         if (options.isVerboseAsm()) {
             if (stmt.getLocation() != null) {
                 as.comment(stmt.getLocation().numberedLine());
@@ -366,12 +501,14 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
 
 
     @Override
-    public Void visit(Assign assign) {
+    public Void visit(Call call)
+    {
+
         return null;
     }
 
     @Override
-    public Void visit(CJump cJump) {
+    public Void visit(Return aReturn) {
         return null;
     }
 
@@ -386,6 +523,11 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
     }
 
     @Override
+    public Void visit(CJump cJump) {
+        return null;
+    }
+
+    @Override
     public Void visit(Jump jump) {
         return null;
     }
@@ -395,51 +537,212 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         return null;
     }
 
+    //
+    // Expressions
+    //
+
+    private void compile(Expr n) {
+        if (options.isVerboseAsm()) {
+            as.comment(n.getClass().getSimpleName() + " {");
+            as.indentComment();
+        }
+        n.accept(this);
+        if (options.isVerboseAsm()) {
+            as.unindentComment();
+            as.comment("}");
+        }
+    }
+
     @Override
-    public Void visit(Return aReturn) {
+    public Void visit(Bin node) {
+        Op op = node.getOp();
+        Type t = node.getType();
+        if (node.getRight().isConstant() && !doesRequireRegisterOperand(op)) {
+            compile(node.getLeft());
+            compileBinaryOp(op, ax(t), node.getRight().asmValue());
+        } else if (node.getRight().isConstant()) {
+            compile(node.getLeft());
+            loadConstant(node.getRight(), cx());
+            compileBinaryOp(op, ax(t), cx(t));
+        } else if (node.getRight().isVar()) {
+            compile(node.getRight());
+            loadVariable((Var) node.getRight().getEntityForce(), cx(t));
+            compileBinaryOp(op, ax(t), cx(t));
+        } else if (node.getLeft().isConstant() || node.getLeft().isVar() || node.getLeft().isAddr()) {
+            compile(node.getRight());
+            as.mov(ax(), cx());
+            compile(node.getLeft());
+            compileBinaryOp(op, ax(t), cx(t));
+        } else {
+            compile(node.getRight());
+            as.virtualPush(ax());
+            compile(node.getLeft());
+            as.virtualPop(cx());
+            compileBinaryOp(op, ax(t), cx(t));
+        }
+        return null;
+    }
+
+    private boolean doesRequireRegisterOperand(Op op) {
+        switch (op) {
+            case S_DIV:
+            case U_DIV:
+            case S_MOD:
+            case U_MOD:
+            case BIT_LSHIFT:
+            case BIT_RSHIFT:
+            case ARITH_RSHIFT:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void compileBinaryOp(Op op, Register left, Register right) {
+        switch (op) {
+            case ADD:
+                as.add(right, left);
+                break;
+            case SUB:
+                as.sub(right, left);
+                break;
+            case MUL:
+                as.imul(right, left);
+                break;
+            case S_DIV:
+            case S_MOD:
+                as.cltd();
+                as.idiv(cx(right.type));
+                if (op == Op.S_MOD) {
+                    as.mov(dx(), left);
+                }
+                break;
+            case U_DIV:
+            case U_MOD:
+                as.mov(imm(0), dx());
+                as.div(cx(left.type));
+                if (op == Op.U_MOD) {
+                    as.mov(dx(), left);
+                }
+                break;
+            case BIT_AND:
+                as.add(right, left);
+                break;
+            case BIT_OR:
+                as.or(right, left);
+                break;
+            case BIT_XOR:
+                as.xor(right, left);
+                break;
+            case BIT_LSHIFT:
+                as.sal(c1(), left);
+                break;
+            case BIT_RSHIFT:
+                as.shr(cl(), left);
+                break;
+            case ARITH_RSHIFT:
+                as.sar(cl(), left);
+                break;
+            default:
+                as.cmp(right, ax(left.type));
+                switch (op) {
+                    case EQ:     as.sete (al()); break;
+                    case NEQ:    as.setne(al()); break;
+                    case S_GT:   as.setg (al()); break;
+                    case S_GTEQ: as.setge(al()); break;
+                    case S_LT:   as.setl (al()); break;
+                    case S_LTEQ: as.setle(al()); break;
+                    case U_GT:   as.seta (al()); break;
+                    case U_GTEQ: as.setae(al()); break;
+                    case U_LT:   as.setb (al()); break;
+                    case U_LTEQ: as.setbe(al()); break;
+                    default:
+                        throw new Error("unknown binary operator: " + op);
+                }
+                as.movzx(al(),left);
+        }
+    }
+
+    @Override
+    public Void visit(Uni node) {
+        Type src = node.getExpr().getType();
+        Type dest = node.getType();
+        compile(node.getExpr());
+        switch (node.getOp()) {
+            case UMINUS:
+                as.neg(ax(src));
+                break;
+            case BIT_NOT:
+                as.not(ax(src));
+                break;
+            case NOT:
+                as.text(ax(src),ax(src));
+                as.sete(al());
+                as.movzx(al(),ax(dest));
+                break;
+            case S_CAST:
+                as.movsx(ax(src), ax(dest));
+                break;
+            case U_CAST:
+                as.movzx(ax(src),ax(dest));
+                break;
+            default:
+                throw new Error("unknown unary operator: " + node.getOp());
+        }
         return null;
     }
 
     @Override
-    public Void visit(Bin bin) {
+    public Void visit(Var node) {
+        loadVariable(node, ax());
         return null;
     }
 
     @Override
-    public Void visit(Int anInt) {
+    public Void visit(Int node) {
+        as.mov(imm(node.getValue()), ax());
         return null;
     }
 
     @Override
-    public Void visit(Addr addr) {
+    public Void visit(Str node) {
+        loadConstant(node, ax());
         return null;
     }
 
     @Override
-    public Void visit(Call call) {
+    public Void visit(Assign node) {
+        if (node.getLhs().isAddr() && node.getLhs().memref() != null) {
+            compile(node.getLhs());
+            store(ax(node.getLhs().getType()), node.getLhs().memref());
+        } else if (node.getRhs().isConstant()) {
+            compile(node.getLhs());
+            as.mov(ax(), cx());
+            loadConstant(node.getRhs(), ax());
+            store(ax(node.getLhs().getType()), mem(cx()));
+        } else {
+            compile(node.getRhs());
+            as.virtualPush(ax());
+            compile(node.getLhs());
+            as.mov(ax(), cx());
+            as.virtualPop(ax());
+            store(ax(node.getLhs().getType()), mem(cx()));
+        }
         return null;
     }
 
     @Override
-    public Void visit(Mem mem) {
+    public Void visit(Mem node) {
+        compile(node.getExpr());
+        load(mem(ax()), ax(node.getType()));
         return null;
     }
 
     @Override
-    public Void visit(Str str) {
+    public Void visit(Addr node) {
+        loadAddress(node.getEntity(), ax());
         return null;
     }
-
-    @Override
-    public Void visit(Uni uni) {
-        return null;
-    }
-
-    @Override
-    public Void visit(Var var) {
-        return null;
-    }
-
 
     private Register ax() {
         return ax(naturalType);
@@ -457,7 +760,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         return cx(Type.INT8);
     }
 
-    private Register c1() {
+    private Register cl() {
         return cx(Type.INT8);
     }
 
@@ -496,4 +799,34 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
     private Register sp() {
         return new Register(RegisterClass.SP, naturalType);
     }
+
+    private DirectMemoryReference mem(Symbol sym) {
+        return new DirectMemoryReference(sym);
+    }
+
+    private IndirectMemoryReference mem(Register reg) {
+        return new IndirectMemoryReference(0, reg);
+    }
+
+    private IndirectMemoryReference mem(long offset, Register reg) {
+        return new IndirectMemoryReference(offset, reg);
+    }
+
+    private IndirectMemoryReference mem(Symbol offset, Register reg) {
+        return new IndirectMemoryReference(offset, reg);
+    }
+
+    private ImmediateValue imm(long n) {
+        return new ImmediateValue(n);
+    }
+
+    private ImmediateValue imm(Symbol sym) {
+        return new ImmediateValue(sym);
+    }
+
+    private ImmediateValue imm(Literal literal) {
+        return new ImmediateValue(literal);
+    }
+
+
 }

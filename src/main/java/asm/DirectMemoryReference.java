@@ -31,4 +31,19 @@ public class DirectMemoryReference extends MemoryReference {
     public int compareTo(MemoryReference o) {
         return 0;
     }
+
+    @Override
+    public void fixOffset(long diff) {
+
+    }
+
+    @Override
+    protected int cmp(DirectMemoryReference mem) {
+        return 0;
+    }
+
+    @Override
+    protected int cmp(IndirectMemoryReference mem) {
+        return 0;
+    }
 }

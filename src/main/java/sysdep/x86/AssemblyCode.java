@@ -14,21 +14,25 @@ public class AssemblyCode implements sysdep.AssemblyCode {
     final Type naturalType;
     final long stackWordSize;
     final SymbolTable labelSymbols;
-    final boolean varbose;
+    final boolean verbose;
     final VirtualStack virtualStack = new VirtualStack();
     private List<Assembly> assemblies = new ArrayList<>();
     private int commentIndentLevel = 0;
-    private Statisties statisties;
+    private Statistics statistics;
 
-    AssemblyCode(Type naturalType, long stackWordSize, SymbolTable labelSymbols, boolean varbose) {
+    AssemblyCode(Type naturalType, long stackWordSize, SymbolTable labelSymbols, boolean verbose) {
         this.naturalType = naturalType;
         this.stackWordSize = stackWordSize;
         this.labelSymbols = labelSymbols;
-        this.varbose = varbose;
+        this.verbose = verbose;
     }
 
     public List<Assembly> assemblies() {
         return assemblies;
+    }
+
+    void addAll(List<Assembly> assemblies) {
+        this.assemblies.addAll(assemblies);
     }
 
     @Override
@@ -52,6 +56,34 @@ public class AssemblyCode implements sysdep.AssemblyCode {
             printStream.println(asm.dump());
         }
     }
+
+    void apply(PeepholeOptimizer opt) {
+        assemblies = opt.optimize(assemblies);
+    }
+
+    private Statistics statistics() {
+        if (statistics == null) {
+            statistics = Statistics.collect(assemblies);
+        }
+        return statistics;
+    }
+
+    boolean doesUser(Register reg) {
+        return statistics().doesRegisterUsed(reg);
+    }
+
+    public void comment(String str) {
+        assemblies.add(new Comment(str, commentIndentLevel));
+    }
+
+    void indentComment() {
+        commentIndentLevel++;
+    }
+
+    void unindentComment() {
+        commentIndentLevel--;
+    }
+
 
     public void label(Symbol sym) {
         assemblies.add(new Label(sym));
@@ -375,9 +407,11 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn(base.type, "sal", bits, base);
     }
 
+
     void shr(Register bits, Register base) {
         insn(base.type, "shr", bits, base);
     }
+
 
     class VirtualStack {
         private long offset;
@@ -427,6 +461,22 @@ public class AssemblyCode implements sysdep.AssemblyCode {
             }
         }
 
+    }
+
+    void virtualPop(Register reg) {
+        if (verbose) {
+            comment("push " + reg.baseName() + " -> " + virtualStack.top());
+        }
+        virtualStack.extend(stackWordSize);
+        mov(reg, virtualStack.top());
+    }
+
+    void virtualPush(Register reg) {
+        if (verbose) {
+            comment("pop " + reg.baseName() + " <- " + virtualStack.top());
+        }
+        mov(virtualStack.top(), reg);
+        virtualStack.rewind(stackWordSize);
     }
 
 }
