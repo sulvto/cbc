@@ -25,11 +25,11 @@ public class X86Linux implements Platform {
 
     @Override
     public Assembler assembler(ErrorHandler errorHandler) {
-        return null;
+        return new GNUAssembler(errorHandler);
     }
 
     @Override
     public Linker linker(ErrorHandler errorHandler) {
-        return null;
+        return new GNULinker(errorHandler);
     }
 }

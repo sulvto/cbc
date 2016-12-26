@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
 
 /**
  * Created by sulvto on 16-11-22.
@@ -26,7 +27,7 @@ public class Options {
     private Platform platform = new X86Linux();
     private CodeGeneratorOptions genOptions = new CodeGeneratorOptions();
     private AssemblerOptions asOptions = new AssemblerOptions();
-    //    private LinkerOptions ldOptions= new LinkerOptions();
+    private LinkerOptions ldOptions = new LinkerOptions();
     private String outputFileName;
     private List<LdArg> ldArgs;
     private List<SourceFile> sourceFiles;
@@ -110,8 +111,7 @@ public class Options {
     }
 
     private void parseError(String message) {
-        // OptionParseError
-        throw new Error(message);
+        throw new OptionParseError(message);
     }
 
     public CompilerMode mode() {
@@ -169,5 +169,41 @@ public class Options {
 
     AssemblerOptions asOptions() {
         return asOptions;
+    }
+
+    public boolean isGeneratingSharedLibrary() {
+        return ldOptions.generatingSharedLibrary;
+    }
+
+    public Linker linker(ErrorHandler errorHandler) {
+        return platform.linker(errorHandler);
+    }
+
+    public LinkerOptions ldOptions() {
+        return ldOptions;
+    }
+
+    List<String> ldArgs() {
+        return ldArgs.stream().map(LdArg::toString).collect(Collectors.toList());
+    }
+
+    public String soFileName() {
+        return linkedFileName(".so");
+    }
+
+    public String exeFileName() {
+        return linkedFileName("");
+    }
+
+    private static final String DEFAULT_LINKER_OUTPUT = "a.out";
+
+    private String linkedFileName(String newExt) {
+        if (outputFileName != null) {
+            return outputFileName;
+        }else if (sourceFiles.size() == 1) {
+            return sourceFiles.get(0).linkedFileName(newExt);
+        } else {
+            return DEFAULT_LINKER_OUTPUT;
+        }
     }
 }

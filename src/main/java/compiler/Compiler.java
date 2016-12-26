@@ -3,10 +3,7 @@ package compiler;
 import ast.AST;
 import ast.ExprNode;
 import ast.StmtNode;
-import exception.CompileException;
-import exception.FileException;
-import exception.SemanticException;
-import exception.SyntaxException;
+import exception.*;
 import ir.IR;
 import parser.Parser;
 import sysdep.AssemblyCode;
@@ -48,7 +45,6 @@ public class Compiler {
 
     private void build(List<SourceFile> srcs, Options opts) throws CompileException {
         for (SourceFile src : srcs) {
-            // TODO
             if (src.isCflatSource()) {
                 String destPath = opts.asmFileNameOf(src);
                 compile(src.path(), destPath, opts);
@@ -114,13 +110,24 @@ public class Compiler {
         return stmt;
     }
 
-    private void link(Options opts) {
-        // TODO
+    private void assemble(String srcPath, String destPath, Options opts) throws IPCException {
+        opts.assembler(errorHandler).assemble(srcPath, destPath, opts.asOptions());
     }
 
-    private void assemble(String srcPath, String destPath, Options opts) {
-        // TODO
-//        opts.assembler(errorHandler).assemble(srcPath, destPath, opts.asOptions());
+    private void link(Options opts) {
+        if (!opts.isGeneratingSharedLibrary()) {
+            generateExecutable(opts);
+        } else {
+            generateSharedLibrary(opts);
+        }
+    }
+
+    private void generateSharedLibrary(Options opts) {
+        opts.linker(errorHandler).generateSharedLibrary(opts.ldArgs(),opts.soFileName(),opts.ldOptions());
+    }
+
+    private void generateExecutable(Options opts) {
+        opts.linker(errorHandler).generateExecutable(opts.ldArgs(),opts.exeFileName(),opts.ldOptions());
     }
 
     private boolean checkSyntax(Options opts) {
@@ -185,7 +192,6 @@ public class Compiler {
             return true;
         }
         return false;
-
     }
 
     private boolean dumpAsm(AssemblyCode asm, CompilerMode mode) {

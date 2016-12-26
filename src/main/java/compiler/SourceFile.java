@@ -114,4 +114,8 @@ public class SourceFile implements LdArg {
     public void setCurrentName(String currentName) {
         this.currentName = currentName;
     }
+
+    public String linkedFileName(String newExt) {
+        return replaceExt(newExt);
+    }
 }
