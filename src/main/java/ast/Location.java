@@ -28,6 +28,10 @@ public class Location {
 
     @Override
     public String toString() {
-        return sourceName+":"+token.lineno();
+        return sourceName + ":" + token.lineno();
+    }
+
+    public String numberedLine() {
+        return "line " + token.lineno() + ": " + token.includedLine();
     }
 }

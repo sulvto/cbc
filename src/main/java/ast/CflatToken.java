@@ -89,4 +89,17 @@ public class CflatToken implements Iterable<CflatToken> {
     public Iterator<CflatToken> iterator() {
         return buildTokenList(token, false).iterator();
     }
+
+    public String includedLine() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (CflatToken t : tokensWithoutFirstSpecials()) {
+            int idx = t.image().indexOf("\n");
+            if (idx >= 0) {
+                stringBuilder.append(t.image().substring(0, idx));
+                break;
+            }
+            stringBuilder.append(t.image());
+        }
+        return stringBuilder.toString();
+    }
 }

@@ -93,6 +93,18 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         assemblies.add(label);
     }
 
+    public void reduceLabels() {
+        Statistics stats = statistics();
+        List<Assembly> result = new ArrayList<>();
+        for (Assembly asm : assemblies) {
+            if (asm.isLabel() && !stats.doesSymbolUsed((Label) asm)) {
+
+            } else {
+                result.add(asm);
+            }
+        }
+        assemblies = result;
+    }
 
     private void directive(String direc) {
         assemblies.add(new Directive(direc));
@@ -403,10 +415,10 @@ public class AssemblyCode implements sysdep.AssemblyCode {
         insn(base.type, "sar", bits, base);
     }
 
+
     void sal(Register bits, Register base) {
         insn(base.type, "sal", bits, base);
     }
-
 
     void shr(Register bits, Register base) {
         insn(base.type, "shr", bits, base);
@@ -460,7 +472,6 @@ public class AssemblyCode implements sysdep.AssemblyCode {
                 mem.fixOffset(diff);
             }
         }
-
     }
 
     void virtualPop(Register reg) {

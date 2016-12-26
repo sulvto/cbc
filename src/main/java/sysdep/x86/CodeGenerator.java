@@ -374,7 +374,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         for (Stmt s : func.getIr()) {
             compileStmt(s);
         }
-        as.lalel(epilogue);
+        as.label(epilogue);
         return as;
     }
 
@@ -486,6 +486,13 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         }
     }
 
+    private void rewindStack(AssemblyCode file, long len) {
+        if (len > 0) {
+            file.add(imm(len), sp());
+        }
+    }
+
+
     private AssemblyCode newAssemblyCode() {
         return new AssemblyCode(naturalType, STACK_WORD_SIZE, new SymbolTable(LABEL_SYMBOL_BASE), options.isVerboseAsm());
     }
@@ -499,41 +506,72 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         stmt.accept(this);
     }
 
-
     @Override
-    public Void visit(Call call)
-    {
+    public Void visit(Call node) {
+        for (Expr arg : ListUtils.reverse(node.getArgs())) {
+            compile(arg);
+            as.push(ax());
+        }
+        if (node.isStaticCall()) {
+            as.call(node.getFunction().getCallingSymbol());
+        } else {
+            compile(node.getExpr());
+            as.callAbsolute(ax());
+        }
 
+        rewindStack(as, stackSizeFromWordNum(node.numArgs()));
         return null;
     }
 
     @Override
-    public Void visit(Return aReturn) {
+    public Void visit(Return node) {
+        if (node.getExpr() != null) {
+            compile(node.getExpr());
+        }
+        as.jmp(epilogue);
+        return null;
+
+    }
+
+    @Override
+    public Void visit(ExprStmt stmt) {
+        compile(stmt.getExpr());
         return null;
     }
 
     @Override
-    public Void visit(ExprStmt exprStmt) {
+    public Void visit(LabelStmt node) {
+        as.label(node.getLabel());
         return null;
     }
 
     @Override
-    public Void visit(LabelStmt labelStmt) {
+    public Void visit(CJump node) {
+        compile(node.getCond());
+        Type t = node.getCond().getType();
+        as.test(ax(t), ax(t));
+        as.jnz(node.getThenLabel());
+        as.jmp(node.getElseLabel());
+        return null;
+    }
+
+
+    @Override
+    public Void visit(Jump node) {
+        as.jmp(node.getLabel());
         return null;
     }
 
     @Override
-    public Void visit(CJump cJump) {
-        return null;
-    }
-
-    @Override
-    public Void visit(Jump jump) {
-        return null;
-    }
-
-    @Override
-    public Void visit(Switch aSwitch) {
+    public Void visit(Switch node) {
+        compile(node.getCond());
+        Type type = node.getCond().getType();
+        for (Case c : node.getCases()) {
+            as.mov(imm(c.value), cx());
+            as.cmp(cx(type), ax(type));
+            as.je(c.label);
+        }
+        as.jmp(node.getDefaultLabel());
         return null;
     }
 
@@ -566,7 +604,11 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
             compileBinaryOp(op, ax(t), cx(t));
         } else if (node.getRight().isVar()) {
             compile(node.getRight());
-            loadVariable((Var) node.getRight().getEntityForce(), cx(t));
+            loadVariable((Var) node.getRight(), cx(t));
+            compileBinaryOp(op, ax(t), cx(t));
+        } else if (node.getRight().isAddr()) {
+            compile(node.getLeft());
+            loadAddress(node.getEntityForce(), cx(t));
             compileBinaryOp(op, ax(t), cx(t));
         } else if (node.getLeft().isConstant() || node.getLeft().isVar() || node.getLeft().isAddr()) {
             compile(node.getRight());
@@ -598,7 +640,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         }
     }
 
-    private void compileBinaryOp(Op op, Register left, Register right) {
+    private void compileBinaryOp(Op op, Register left, Operand right) {
         switch (op) {
             case ADD:
                 as.add(right, left);
@@ -612,7 +654,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
             case S_DIV:
             case S_MOD:
                 as.cltd();
-                as.idiv(cx(right.type));
+                as.idiv(cx(left.type));
                 if (op == Op.S_MOD) {
                     as.mov(dx(), left);
                 }
@@ -635,7 +677,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
                 as.xor(right, left);
                 break;
             case BIT_LSHIFT:
-                as.sal(c1(), left);
+                as.sal(cl(), left);
                 break;
             case BIT_RSHIFT:
                 as.shr(cl(), left);
@@ -646,20 +688,40 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
             default:
                 as.cmp(right, ax(left.type));
                 switch (op) {
-                    case EQ:     as.sete (al()); break;
-                    case NEQ:    as.setne(al()); break;
-                    case S_GT:   as.setg (al()); break;
-                    case S_GTEQ: as.setge(al()); break;
-                    case S_LT:   as.setl (al()); break;
-                    case S_LTEQ: as.setle(al()); break;
-                    case U_GT:   as.seta (al()); break;
-                    case U_GTEQ: as.setae(al()); break;
-                    case U_LT:   as.setb (al()); break;
-                    case U_LTEQ: as.setbe(al()); break;
+                    case EQ:
+                        as.sete(al());
+                        break;
+                    case NEQ:
+                        as.setne(al());
+                        break;
+                    case S_GT:
+                        as.setg(al());
+                        break;
+                    case S_GTEQ:
+                        as.setge(al());
+                        break;
+                    case S_LT:
+                        as.setl(al());
+                        break;
+                    case S_LTEQ:
+                        as.setle(al());
+                        break;
+                    case U_GT:
+                        as.seta(al());
+                        break;
+                    case U_GTEQ:
+                        as.setae(al());
+                        break;
+                    case U_LT:
+                        as.setb(al());
+                        break;
+                    case U_LTEQ:
+                        as.setbe(al());
+                        break;
                     default:
                         throw new Error("unknown binary operator: " + op);
                 }
-                as.movzx(al(),left);
+                as.movzx(al(), left);
         }
     }
 
@@ -676,15 +738,15 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
                 as.not(ax(src));
                 break;
             case NOT:
-                as.text(ax(src),ax(src));
+                as.test(ax(src), ax(src));
                 as.sete(al());
-                as.movzx(al(),ax(dest));
+                as.movzx(al(), ax(dest));
                 break;
             case S_CAST:
                 as.movsx(ax(src), ax(dest));
                 break;
             case U_CAST:
-                as.movzx(ax(src),ax(dest));
+                as.movzx(ax(src), ax(dest));
                 break;
             default:
                 throw new Error("unknown unary operator: " + node.getOp());
@@ -742,6 +804,35 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
     public Void visit(Addr node) {
         loadAddress(node.getEntity(), ax());
         return null;
+    }
+
+    private void loadConstant(Expr node, Register reg) {
+        if (node.asmValue() != null) {
+            as.mov(node.asmValue(), reg);
+        } else if (node.memref() != null) {
+            as.lea(node.memref(), reg);
+        } else {
+            throw new Error("must not happen: constant has no asm value");
+        }
+    }
+
+    private void loadVariable(Var var, Register dest) {
+        if (var.memref() == null) {
+            Register a = dest.forType(naturalType);
+            as.mov(var.address(), a);
+            load(mem(a), dest.forType(var.getType()));
+        } else {
+            load(var.memref(), dest.forType(var.getType()));
+        }
+
+    }
+
+    private void loadAddress(Entity var, Register dest) {
+        if (var.address() != null) {
+            as.mov(var.address(), dest);
+        } else {
+            as.lea(var.getMemref(), dest);
+        }
     }
 
     private Register ax() {
@@ -828,5 +919,12 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         return new ImmediateValue(literal);
     }
 
+    private void store(Register register, MemoryReference mem) {
+        as.mov(register, mem);
+    }
+
+    private void load(MemoryReference mem, Register reg) {
+        as.mov(mem, reg);
+    }
 
 }
