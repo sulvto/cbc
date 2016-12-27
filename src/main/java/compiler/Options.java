@@ -1,5 +1,6 @@
 package compiler;
 
+import exception.OptionParseError;
 import parser.LibraryLoader;
 import sysdep.*;
 import sysdep.x86.CodeGenerator;
