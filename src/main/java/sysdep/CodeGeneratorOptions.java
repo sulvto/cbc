@@ -16,7 +16,7 @@ public class CodeGeneratorOptions {
         verboseAsm = false;
     }
 
-    public void setOptimizeLevel(int optimizeLevel) {
+    public void setOptimizationLevel(int optimizeLevel) {
         this.optimizeLevel = optimizeLevel;
     }
 

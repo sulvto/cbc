@@ -7,6 +7,7 @@ import sysdep.x86.CodeGenerator;
 import type.TypeTable;
 import utils.ErrorHandler;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,11 +26,12 @@ public class Options {
 
     private CompilerMode mode;
 
+    private String outputFileName;
+    private boolean verbose = false;
     private Platform platform = new X86Linux();
     private CodeGeneratorOptions genOptions = new CodeGeneratorOptions();
     private AssemblerOptions asOptions = new AssemblerOptions();
     private LinkerOptions ldOptions = new LinkerOptions();
-    private String outputFileName;
     private List<LdArg> ldArgs;
     private List<SourceFile> sourceFiles;
     private LibraryLoader loader = new LibraryLoader();
@@ -53,9 +55,62 @@ public class Options {
                     debugParser = true;
                 } else if (arg.startsWith("-o")) {
                     outputFileName = getOptArg(arg, argIterator);
-                }
-                //TODO
-                else {
+                } else if ("-fpic".equalsIgnoreCase(arg)) {
+                    genOptions.generatePIC();
+                } else if ("-fpie".equalsIgnoreCase(arg)) {
+                    genOptions.generatePIE();
+                } else if ("-0".equals(arg)) {
+                    String type = arg.substring(2);
+                    if (!type.matches("^([0123s]|)$")) {
+                        parseError("unknown optimization switch: " + arg);
+                    }
+                    genOptions.setOptimizationLevel(type.equals("0") ? 0 : 1);
+                } else if ("-fverbose-asm".equals(arg)||"verbose-asm".equals(arg)) {
+                    genOptions.generateVerboseAsm();
+                } else if ("-Wa,".equals (arg)) {
+                    for (String s : parseCommaSeparatedOptions(argIterator)) {
+                        asOptions.addArg(s);
+                    }
+                } else if ("-Xassembler".equals (arg)) {
+                    asOptions.addArg(nextArg(arg, argIterator));
+                } else if ("-static".equals (arg)) {
+                    addLdArg(arg);
+                } else if ("-shared".equals (arg)) {
+                    ldOptions.generatingSharedLibrary = true;
+                } else if ("-pie".equals (arg)) {
+                    ldOptions.generatingPIE = true;
+                } else if ("--readonly-got".equals (arg)) {
+                    addLdArg("-z");
+                    addLdArg("combreloc");
+                    addLdArg("-z");
+                    addLdArg("now");
+                    addLdArg("-z");
+                    addLdArg("relro");
+                } else if ("-l".equalsIgnoreCase (arg)) {
+                    addLdArg(arg + getOptArg(arg, argIterator));
+                } else if ("-nostartfiles".equals (arg)) {
+                    ldOptions.noStartFiles = true;
+                } else if ("-nodefaultlibs".equals (arg)) {
+                    ldOptions.noDefaultLibs = true;
+                } else if ("-nostdlib".equals (arg)) {
+                    ldOptions.noStartFiles = true;
+                } else if ("-Wl,".equals (arg)) {
+                    for (String opt : parseCommaSeparatedOptions(argIterator)) {
+                        addLdArg(opt);
+                    }
+                } else if ("-Xlinker".equals (arg)) {
+                    addLdArg(nextArg(arg, argIterator));
+                } else if ("-v".equals (arg)) {
+                    verbose = true;
+                    asOptions.verbose = true;
+                    ldOptions.verbose = true;
+                } else if ("--version".equals (arg)) {
+                    System.out.printf("%s version %s\n",Compiler.ProgeamaName,Compiler.Version)；
+                    System.exit(0);
+                } else if ("--help".equals (arg)) {
+                    printUsage(System.out);
+                    System.exit(0);
+                } else {
                     parseError("unknown option: " + arg);
                 }
             } else {
@@ -83,6 +138,14 @@ public class Options {
         }
 
         // TODO
+    }
+
+    private void printUsage(PrintStream out) {
+        // TODO
+    }
+
+    private void addLdArg(String arg) {
+        ldArgs.add(new LdOption(arg));
     }
 
     private String getOptArg(String opt, ListIterator<String> args) {
@@ -201,7 +264,7 @@ public class Options {
     private String linkedFileName(String newExt) {
         if (outputFileName != null) {
             return outputFileName;
-        }else if (sourceFiles.size() == 1) {
+        } else if (sourceFiles.size() == 1) {
             return sourceFiles.get(0).linkedFileName(newExt);
         } else {
             return DEFAULT_LINKER_OUTPUT;
