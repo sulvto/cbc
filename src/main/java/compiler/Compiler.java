@@ -114,7 +114,7 @@ public class Compiler {
         opts.assembler(errorHandler).assemble(srcPath, destPath, opts.asOptions());
     }
 
-    private void link(Options opts) {
+    private void link(Options opts) throws IPCException {
         if (!opts.isGeneratingSharedLibrary()) {
             generateExecutable(opts);
         } else {
@@ -122,11 +122,11 @@ public class Compiler {
         }
     }
 
-    private void generateSharedLibrary(Options opts) {
+    private void generateSharedLibrary(Options opts) throws IPCException {
         opts.linker(errorHandler).generateSharedLibrary(opts.ldArgs(),opts.soFileName(),opts.ldOptions());
     }
 
-    private void generateExecutable(Options opts) {
+    private void generateExecutable(Options opts) throws IPCException {
         opts.linker(errorHandler).generateExecutable(opts.ldArgs(),opts.exeFileName(),opts.ldOptions());
     }
 

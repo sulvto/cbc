@@ -82,8 +82,13 @@ public class Parser {
     }
 
     public Declarations parseDecls() throws SyntaxException {
-        // TODO
-        return null;
+        try{
+            return declaration_file();
+        }catch(TokenMgrError ex) {
+            throw new SyntaxException(ex.getMessage());
+        }catch(ParseException ex) {
+            throw new SyntaxException(ex.getMessage());
+        }
     }
 
     private void addKnownTypedefs(List<TypedefNode> typedefs) {
@@ -293,6 +298,36 @@ AST compilation_unit():
         return new AST(location(t),decls);
     }
 }
+
+Declarations declaration_file():
+{
+    Declarations impdecls ,decls = new Declarations();
+     UndefinedFunction funcdecl;
+     UndefinedVariable vardecl;
+     Constant defconst;
+     StructNode defstruct;
+     UnionNode defunion;
+     TypedefNode typedef;
+}
+{
+    impdecls = import_stmts()
+    {
+        decls.add(impdecls);
+    }
+    (LOOKAHEAD(<EXTERN> typeref()<IDENTIFIER>"(")
+    funcdecl=funcdecl()     { decls.addFuncdecl(funcdecl); }
+    | vardecl=vardecl()     { decls.addVardecl(vardecl); }
+    | defconst=defconst()   { decls.addConstant(defconst); }
+    | defstruct=defstruct() { decls.addDefstruct(defstruct); }
+    | defunion=defunion()   { decls.addDefunion(defunion); }
+    | typedef=typedef()     { decls.addTypedef(typedef); }
+    )*
+    <EOF>
+    {
+        return decls;
+    }
+}
+
 
 Declarations import_stmts():
 {
@@ -531,6 +566,33 @@ Slot slot():
 }
 {
     type=type() name=name(){ return new Slot(type,name); }
+}
+
+UndefinedFunction funcdecl():
+{
+    TypeRef ret;
+    String n;
+    Params ps;
+}
+{
+    <EXTERN> ret=typeref() n=name()"(" ps=params()")" ";"
+       {
+            TypeRef t = new FunctionTypeRef(ret,ps.parametersTypeRef());
+            return new UndefinedFunction(new TypeNode(t),n,ps);
+       }
+
+}
+
+UndefinedVariable vardecl():
+{
+    TypeNode t;
+    String n;
+}
+{
+    <EXTERN> t=type() n=name()";"
+    {
+        return new  UndefinedVariable(t,n);
+    }
 }
 
 TypedefNode typedef() :

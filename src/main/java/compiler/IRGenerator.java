@@ -459,7 +459,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         Type t = node.getType();
         Type r = node.getRight().getType();
         Type l = node.getLeft().getType();
-        if (isPointerDiff(op, r, l)) {
+        if (isPointerDiff(op, l, r)) {
             // ptr - ptr -> (ptr - ptr) / ptrBaseSize
             Expr tmp = new Bin(asmType(t), op, left, right);
             return new Bin(asmType(t), Op.S_DIV, tmp, ptrBaseSize(l));
@@ -507,8 +507,8 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         Location lloc = node.getLhs().location();
         Location rloc = node.getRhs().location();
         if (isStatement()) {
-            Expr lhs = transformExpr(node.getLhs());
             Expr rhs = transformExpr(node.getRhs());
+            Expr lhs = transformExpr(node.getLhs());
             assign(lloc, lhs, rhs);
             return null;
         } else {
@@ -708,7 +708,7 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
     }
 
     private asm.Type varType(Type type) {
-        if (type.isScalar()) return null;
+        if (!type.isScalar()) return null;
         return asm.Type.get(type.size());
     }
 

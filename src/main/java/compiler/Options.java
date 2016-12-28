@@ -7,7 +7,6 @@ import sysdep.x86.CodeGenerator;
 import type.TypeTable;
 import utils.ErrorHandler;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,51 +64,45 @@ public class Options {
                         parseError("unknown optimization switch: " + arg);
                     }
                     genOptions.setOptimizationLevel(type.equals("0") ? 0 : 1);
-                } else if ("-fverbose-asm".equals(arg)||"verbose-asm".equals(arg)) {
+                } else if ("-fverbose-asm".equals(arg) || "verbose-asm".equals(arg)) {
                     genOptions.generateVerboseAsm();
-                } else if ("-Wa,".equals (arg)) {
-                    for (String s : parseCommaSeparatedOptions(argIterator)) {
+                } else if ("-Wa,".equals(arg)) {
+                    for (String s : parseCommaSeparatedOptions(arg)) {
                         asOptions.addArg(s);
                     }
-                } else if ("-Xassembler".equals (arg)) {
+                } else if ("-Xassembler".equals(arg)) {
                     asOptions.addArg(nextArg(arg, argIterator));
-                } else if ("-static".equals (arg)) {
+                } else if ("-static".equals(arg)) {
                     addLdArg(arg);
-                } else if ("-shared".equals (arg)) {
+                } else if ("-shared".equals(arg)) {
                     ldOptions.generatingSharedLibrary = true;
-                } else if ("-pie".equals (arg)) {
+                } else if ("-pie".equals(arg)) {
                     ldOptions.generatingPIE = true;
-                } else if ("--readonly-got".equals (arg)) {
+                } else if ("--readonly-got".equals(arg)) {
                     addLdArg("-z");
                     addLdArg("combreloc");
                     addLdArg("-z");
                     addLdArg("now");
                     addLdArg("-z");
                     addLdArg("relro");
-                } else if ("-l".equalsIgnoreCase (arg)) {
+                } else if ("-l".equalsIgnoreCase(arg)) {
                     addLdArg(arg + getOptArg(arg, argIterator));
-                } else if ("-nostartfiles".equals (arg)) {
+                } else if ("-nostartfiles".equals(arg)) {
                     ldOptions.noStartFiles = true;
-                } else if ("-nodefaultlibs".equals (arg)) {
+                } else if ("-nodefaultlibs".equals(arg)) {
                     ldOptions.noDefaultLibs = true;
-                } else if ("-nostdlib".equals (arg)) {
+                } else if ("-nostdlib".equals(arg)) {
                     ldOptions.noStartFiles = true;
-                } else if ("-Wl,".equals (arg)) {
-                    for (String opt : parseCommaSeparatedOptions(argIterator)) {
+                } else if ("-Wl,".equals(arg)) {
+                    for (String opt : parseCommaSeparatedOptions(arg)) {
                         addLdArg(opt);
                     }
-                } else if ("-Xlinker".equals (arg)) {
+                } else if ("-Xlinker".equals(arg)) {
                     addLdArg(nextArg(arg, argIterator));
-                } else if ("-v".equals (arg)) {
+                } else if ("-v".equals(arg)) {
                     verbose = true;
                     asOptions.verbose = true;
                     ldOptions.verbose = true;
-                } else if ("--version".equals (arg)) {
-                    System.out.printf("%s version %s\n",Compiler.ProgeamaName,Compiler.Version)；
-                    System.exit(0);
-                } else if ("--help".equals (arg)) {
-                    printUsage(System.out);
-                    System.exit(0);
                 } else {
                     parseError("unknown option: " + arg);
                 }
@@ -137,11 +130,22 @@ public class Options {
             }
         }
 
-        // TODO
+        if (outputFileName != null && sourceFiles.size() > 1 && !isLinkRequired()) {
+            parseError("-o option only 1 input (except linking)");
+        }
     }
 
-    private void printUsage(PrintStream out) {
-        // TODO
+    private List<String> parseCommaSeparatedOptions(String opt) {
+        String[] opts = opt.split(",");
+        if (opts.length <= 1) {
+            parseError("missing argument for " + opt);
+        }
+
+        List<String> result = new ArrayList<>();
+        for (int i = 1; i < opts.length; i++) {
+            result.add(opts[i]);
+        }
+        return result;
     }
 
     private void addLdArg(String arg) {

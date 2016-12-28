@@ -10,13 +10,8 @@ public abstract class LHSNode extends ExprNode {
     protected Type type;
 
     @Override
-    public boolean isLvalue() {
-        return true;
-    }
-
-    @Override
     public Type getType() {
-        return type!=null?type:origType();
+        return type != null ? type : origType();
     }
 
     public void setType(Type type) {
@@ -25,4 +20,24 @@ public abstract class LHSNode extends ExprNode {
 
     protected abstract Type origType();
 
+    @Override
+    public long allocSize() {
+        return origType().allocSize();
+    }
+
+    @Override
+    public boolean isLvalue() {
+        return true;
+    }
+
+    @Override
+    public boolean isAssignable() {
+        return isLoadable();
+    }
+
+    @Override
+    public boolean isLoadable() {
+        Type type = origType();
+        return !type.isArray() && !type.isFunction();
+    }
 }

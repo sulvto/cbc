@@ -1,5 +1,6 @@
 package sysdep;
 
+import exception.IPCException;
 import utils.CommandUtils;
 import utils.ErrorHandler;
 
@@ -24,7 +25,7 @@ public class GNULinker implements Linker {
     }
 
     @Override
-    public void generateExecutable(List<String> args, String destPath, LinkerOptions opts) {
+    public void generateExecutable(List<String> args, String destPath, LinkerOptions opts) throws IPCException {
         List<String> cmd = new ArrayList<>();
         cmd.add(LINKER);
         cmd.add("-dynamic-linker");
@@ -50,7 +51,7 @@ public class GNULinker implements Linker {
     }
 
     @Override
-    public void generateSharedLibrary(List<String> args, String destPath, LinkerOptions opts) {
+    public void generateSharedLibrary(List<String> args, String destPath, LinkerOptions opts) throws IPCException {
         List<String> cmd = new ArrayList<>();
         cmd.add(LINKER);
         cmd.add("-shared");
