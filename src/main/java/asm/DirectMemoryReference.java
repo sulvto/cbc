@@ -14,36 +14,42 @@ public class DirectMemoryReference extends MemoryReference {
 
     @Override
     public String toSource(SymbolTable table) {
-        return null;
+        return value.toSource(table);
+    }
+
+    @Override
+    public String toString() {
+        return toSource(SymbolTable.getDummy());
     }
 
     @Override
     public String dump() {
-        return null;
+        return "(DirectMemoryReference " + value.dump() + ")";
     }
 
     @Override
     public void collectStatistics(Statistics stats) {
-
+        value.collectStatistics(stats);
     }
 
     @Override
-    public int compareTo(MemoryReference o) {
-        return 0;
+    public int compareTo(MemoryReference mem) {
+        return -mem.cmp(this);
     }
 
     @Override
     public void fixOffset(long diff) {
-
+        throw new Error("DirectMemoryReference#fixOffset");
     }
 
     @Override
     protected int cmp(DirectMemoryReference mem) {
-        return 0;
+        return value.compareTo(mem.value);
     }
 
     @Override
     protected int cmp(IndirectMemoryReference mem) {
-        return 0;
+        return 1;
     }
+
 }
