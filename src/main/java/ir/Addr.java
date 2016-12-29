@@ -32,7 +32,7 @@ public class Addr extends Expr {
 
     @Override
     public MemoryReference memref() {
-        return super.memref();
+        return entity.getMemref();
     }
 
     @Override

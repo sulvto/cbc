@@ -51,7 +51,7 @@ public class LocalResolver extends Visitor {
         }
 
         ast.setScope(toplevel);
-        ast.setconstantTable(constantTable);
+        ast.setConstantTable(constantTable);
     }
 
     private void resolveConstantValues(List<Constant> consts) {

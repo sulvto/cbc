@@ -203,7 +203,7 @@ public class AssemblyCode implements sysdep.AssemblyCode {
     }
 
     void _size(Symbol sym, long size) {
-        _size(sym, size);
+        _size(sym, Long.toString(size));
     }
 
     void _size(Symbol sym, String size) {

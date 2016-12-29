@@ -199,9 +199,12 @@ public class IRGenerator implements ASTVisitor<Void, Expr> {
         scopeStack.add(node.getScope());
         for (DefinedVariable var : node.getVariables()) {
             if (var.hasInitializer()) {
-                var.setIr(transformExpr(var.getInitializer()));
-            } else {
-                assign(var.location(), ref(var), transformExpr(var.getInitializer()));
+                if (var.isPrivate()) {
+                    // static variables
+                    var.setIr(transformExpr(var.getInitializer()));
+                } else {
+                    assign(var.location(), ref(var), transformExpr(var.getInitializer()));
+                }
             }
         }
 

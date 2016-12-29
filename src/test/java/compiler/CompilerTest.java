@@ -37,6 +37,17 @@ public class CompilerTest {
     }
 
     @Test
+    public void dumpAsm() throws Exception {
+        String[] args = {"--dump-asm", getResourcePath("hello.c")};
+        Compiler.main(args);
+    }
+
+    @Test
+    public void printAsm() throws Exception {
+        String[] args = {"--print-asm", getResourcePath("hello.c")};
+        Compiler.main(args);
+    }
+    @Test
     public void commandMain() throws Exception {
 
     }

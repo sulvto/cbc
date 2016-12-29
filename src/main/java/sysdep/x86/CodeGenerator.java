@@ -140,7 +140,7 @@ public class CodeGenerator implements sysdep.CodeGenerator, IRVisitor<Void, Void
         file._data();
         for (DefinedVariable var : gvars) {
             Symbol sym = globalSymbol(var.symbolString());
-            if (var.isPrivate()) {
+            if (!var.isPrivate()) {
                 file._globl(sym);
             }
             file._align(var.alignment());

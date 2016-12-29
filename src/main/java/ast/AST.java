@@ -88,7 +88,7 @@ public class AST extends Node {
         return scope;
     }
 
-    public void setconstantTable(ConstantTable table) {
+    public void setConstantTable(ConstantTable table) {
         if (this.constantTable != null) {
             throw new Error("must not happen: ConstantTable set twice");
         }

@@ -78,11 +78,7 @@ public class LocalScope extends Scope {
      * @return
      */
     public List<DefinedVariable> allLocalVariables() {
-        List<DefinedVariable> result = new ArrayList<>();
-        for (LocalScope s : allLocalScopes()) {
-            result.addAll(s.localVariable());
-        }
-        return result;
+        return allLocalScopes().stream().flatMap(localScope -> localScope.localVariable().stream()).collect(Collectors.toList());
     }
 
     public List<DefinedVariable> localVariable() {
@@ -96,7 +92,7 @@ public class LocalScope extends Scope {
         return allLocalScopes()
                 .stream()
                 .flatMap(localScope -> localScope.variables.values().stream())
-                .filter(variable -> !variable.isPrivate())
+                .filter(Entity::isPrivate)
                 .collect(Collectors.toList());
     }
 
